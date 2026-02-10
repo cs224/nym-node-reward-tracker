@@ -1,0 +1,1386 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.26">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Snapshot tracker – nym_node_reward_tracker</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-9d5a2df094f07d3ebac2a9aad7ed09f6.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="styles.css">
+<meta property="og:title" content="Snapshot tracker – nym_node_reward_tracker">
+<meta property="og:description" content="Track Nym node rewards and export reward withdrawal transactions">
+<meta property="og:site_name" content="nym_node_reward_tracker">
+<meta name="twitter:title" content="Snapshot tracker – nym_node_reward_tracker">
+<meta name="twitter:description" content="Track Nym node rewards and export reward withdrawal transactions">
+<meta name="twitter:card" content="summary">
+</head>
+
+<body class="nav-sidebar floating nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">nym_node_reward_tracker</span>
+    </a>
+  </div>
+        <div class="quarto-navbar-tools tools-end">
+</div>
+          <div id="quarto-search" class="" title="Search"></div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./snapshot.html">Snapshot tracker</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Nym node reward tracker (docs index)</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./common.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Common utilities</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./cosmos_tx_parsing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Cosmos Tx Parsing Helpers</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./snapshot.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Snapshot tracker</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02_cache.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Cache: chain-native event cache for epoch-by-epoch rewards</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./epoch_by_epoch.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Epoch-by-epoch reward replay</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./reward_transactions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Reward transaction export</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./cli.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">CLI</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./tests.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Notebook tests</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#imports-endpoints-constants" id="toc-imports-endpoints-constants" class="nav-link active" data-scroll-target="#imports-endpoints-constants">Imports + endpoints + constants</a></li>
+  <li><a href="#data-model" id="toc-data-model" class="nav-link" data-scroll-target="#data-model">Data model</a>
+  <ul class="collapse">
+  <li><a href="#walletsnapshot" id="toc-walletsnapshot" class="nav-link" data-scroll-target="#walletsnapshot">WalletSnapshot</a></li>
+  <li><a href="#balancebreakdown" id="toc-balancebreakdown" class="nav-link" data-scroll-target="#balancebreakdown">BalanceBreakdown</a></li>
+  </ul></li>
+  <li><a href="#wallet-node-metadata-node_id-identity_key" id="toc-wallet-node-metadata-node_id-identity_key" class="nav-link" data-scroll-target="#wallet-node-metadata-node_id-identity_key">Wallet → node metadata (node_id, identity_key)</a>
+  <ul class="collapse">
+  <li><a href="#get_owned_node_details" id="toc-get_owned_node_details" class="nav-link" data-scroll-target="#get_owned_node_details">get_owned_node_details</a></li>
+  </ul></li>
+  <li><a href="#source-1-spectre-balance-parser" id="toc-source-1-spectre-balance-parser" class="nav-link" data-scroll-target="#source-1-spectre-balance-parser">Source 1: Spectre balance parser</a>
+  <ul class="collapse">
+  <li><a href="#balances_from_spectre_json" id="toc-balances_from_spectre_json" class="nav-link" data-scroll-target="#balances_from_spectre_json">balances_from_spectre_json</a></li>
+  </ul></li>
+  <li><a href="#source-1-spectre-fetcher" id="toc-source-1-spectre-fetcher" class="nav-link" data-scroll-target="#source-1-spectre-fetcher">Source 1: Spectre fetcher</a>
+  <ul class="collapse">
+  <li><a href="#fetch_balances_spectre" id="toc-fetch_balances_spectre" class="nav-link" data-scroll-target="#fetch_balances_spectre">fetch_balances_spectre</a></li>
+  </ul></li>
+  <li><a href="#source-2-cosmos-snapshot-builder-best-effort-chain-native" id="toc-source-2-cosmos-snapshot-builder-best-effort-chain-native" class="nav-link" data-scroll-target="#source-2-cosmos-snapshot-builder-best-effort-chain-native">Source 2: Cosmos snapshot builder (best-effort, chain-native)</a>
+  <ul class="collapse">
+  <li><a href="#fetch_spendable_unym_bank" id="toc-fetch_spendable_unym_bank" class="nav-link" data-scroll-target="#fetch_spendable_unym_bank">fetch_spendable_unym_bank</a></li>
+  <li><a href="#sum_delegated_unym" id="toc-sum_delegated_unym" class="nav-link" data-scroll-target="#sum_delegated_unym">sum_delegated_unym</a></li>
+  <li><a href="#get_delegator_delegations_current" id="toc-get_delegator_delegations_current" class="nav-link" data-scroll-target="#get_delegator_delegations_current">get_delegator_delegations_current</a></li>
+  <li><a href="#get_pending_delegator_reward_unym" id="toc-get_pending_delegator_reward_unym" class="nav-link" data-scroll-target="#get_pending_delegator_reward_unym">get_pending_delegator_reward_unym</a></li>
+  <li><a href="#get_pending_operator_reward_unym" id="toc-get_pending_operator_reward_unym" class="nav-link" data-scroll-target="#get_pending_operator_reward_unym">get_pending_operator_reward_unym</a></li>
+  </ul></li>
+  <li><a href="#cosmos-snapshot-assembly" id="toc-cosmos-snapshot-assembly" class="nav-link" data-scroll-target="#cosmos-snapshot-assembly">Cosmos snapshot assembly</a>
+  <ul class="collapse">
+  <li><a href="#fetch_balances_cosmos" id="toc-fetch_balances_cosmos" class="nav-link" data-scroll-target="#fetch_balances_cosmos">fetch_balances_cosmos</a></li>
+  </ul></li>
+  <li><a href="#snapshot-orchestration" id="toc-snapshot-orchestration" class="nav-link" data-scroll-target="#snapshot-orchestration">Snapshot orchestration</a>
+  <ul class="collapse">
+  <li><a href="#build_wallet_snapshot" id="toc-build_wallet_snapshot" class="nav-link" data-scroll-target="#build_wallet_snapshot">build_wallet_snapshot</a></li>
+  </ul></li>
+  <li><a href="#persistence-and-history" id="toc-persistence-and-history" class="nav-link" data-scroll-target="#persistence-and-history">Persistence and history</a>
+  <ul class="collapse">
+  <li><a href="#scaled_window_change_unym" id="toc-scaled_window_change_unym" class="nav-link" data-scroll-target="#scaled_window_change_unym">scaled_window_change_unym</a></li>
+  <li><a href="#record_history_point" id="toc-record_history_point" class="nav-link" data-scroll-target="#record_history_point">record_history_point</a></li>
+  <li><a href="#prune_history_older_than" id="toc-prune_history_older_than" class="nav-link" data-scroll-target="#prune_history_older_than">prune_history_older_than</a></li>
+  </ul></li>
+  <li><a href="#tabular-output-latest-snapshot" id="toc-tabular-output-latest-snapshot" class="nav-link" data-scroll-target="#tabular-output-latest-snapshot">Tabular output (latest snapshot)</a>
+  <ul class="collapse">
+  <li><a href="#log_snapshot_table" id="toc-log_snapshot_table" class="nav-link" data-scroll-target="#log_snapshot_table">log_snapshot_table</a></li>
+  <li><a href="#write_latest_snapshot_csv" id="toc-write_latest_snapshot_csv" class="nav-link" data-scroll-target="#write_latest_snapshot_csv">write_latest_snapshot_csv</a></li>
+  </ul></li>
+  <li><a href="#main-entry-point-run_snapshot" id="toc-main-entry-point-run_snapshot" class="nav-link" data-scroll-target="#main-entry-point-run_snapshot">Main entry point: run_snapshot</a>
+  <ul class="collapse">
+  <li><a href="#run_snapshot" id="toc-run_snapshot" class="nav-link" data-scroll-target="#run_snapshot">run_snapshot</a></li>
+  </ul></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/cs224/nym-node-reward-tracker/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div><div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="snapshot.html.md"><i class="bi bi-file-code"></i>CommonMark</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content column-body" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Snapshot tracker</h1>
+</div>
+
+
+
+<div class="quarto-title-meta column-body">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<!-- WARNING: THIS FILE WAS AUTOGENERATED! DO NOT EDIT! -->
+<p>This notebook implements the <code>snapshot</code> CLI command.</p>
+<p>It records wallet-level balances in micro-NYM (<code>unym</code>) and can fetch balances from: * <strong>SpectreDAO</strong> aggregator (<code>/api/v1/balances/{address}</code>) * <strong>Nyx chain APIs</strong> (Cosmos REST + mixnet contract smart queries)</p>
+<p>It produces: * a “latest snapshot” table file (<code>node-balances.csv</code> by default, or <code>.xlsx</code> by extension) * a rolling history YAML (<code>data.yaml</code> by default) to estimate 7d/30d deltas</p>
+<section id="imports-endpoints-constants" class="level2">
+<h2 class="anchored" data-anchor-id="imports-endpoints-constants">Imports + endpoints + constants</h2>
+<p>Intent: define endpoints and defaults in one place, and keep the rest of the module pure and testable.</p>
+</section>
+<section id="data-model" class="level2">
+<h2 class="anchored" data-anchor-id="data-model">Data model</h2>
+<p>Intent: normalize both sources to a single internal representation, in <strong>unym ints</strong> (lossless).</p>
+<hr>
+<section id="walletsnapshot" class="level3">
+<h3 class="anchored" data-anchor-id="walletsnapshot">WalletSnapshot</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> WalletSnapshot(</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    data:Any</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>)<span class="op">-&gt;</span><span class="va">None</span>:</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><em>Single timestamped snapshot row for one wallet.</em></p>
+<hr>
+</section>
+<section id="balancebreakdown" class="level3">
+<h3 class="anchored" data-anchor-id="balancebreakdown">BalanceBreakdown</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> BalanceBreakdown(</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    data:Any</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>)<span class="op">-&gt;</span><span class="va">None</span>:</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><em>Normalized wallet balance components in unym.</em></p>
+<div id="40d345d6" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-10T20:12:11.767422Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-10T20:12:11.767280Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-10T20:12:11.770218Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-10T20:12:11.769519Z&quot;}}" data-execution_count="6">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>b <span class="op">=</span> BalanceBreakdown(</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    delegated_unym<span class="op">=</span><span class="st">"1"</span>,</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    self_bonded_unym<span class="op">=</span><span class="dv">2</span>,</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    spendable_unym<span class="op">=</span><span class="dv">3</span>,</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    rewards_operator_commissions_unym<span class="op">=</span><span class="st">"4"</span>,</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> b.total_unym() <span class="op">==</span> <span class="dv">10</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>w <span class="op">=</span> WalletSnapshot(</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    timestamp_utc<span class="op">=</span><span class="st">"2026-01-01T00:00:00+00:00"</span>,</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    wallet_address<span class="op">=</span><span class="st">"n1wallet"</span>,</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    tag<span class="op">=</span><span class="st">"test"</span>,</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    node_id<span class="op">=</span><span class="st">"2196"</span>,</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    identity_key<span class="op">=</span><span class="st">"identity"</span>,</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>    balances<span class="op">=</span>b,</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>    source<span class="op">=</span><span class="st">"spectre"</span>,</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> w.to_latest_csv_row()[<span class="st">"node_id"</span>] <span class="op">==</span> <span class="st">"2196"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="a0554098" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-10T20:12:11.771549Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-10T20:12:11.771411Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-10T20:12:11.774390Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-10T20:12:11.773864Z&quot;}}" data-execution_count="7">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>b</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="7">
+<pre><code>BalanceBreakdown(delegated_unym=1, self_bonded_unym=2, spendable_unym=3, locked_unym=0, rewards_operator_commissions_unym=4, rewards_staking_rewards_unym=0, rewards_unlocked_unym=0)</code></pre>
+</div>
+</div>
+<div id="d5ddcb86" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-10T20:12:11.775761Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-10T20:12:11.775624Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-10T20:12:11.778587Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-10T20:12:11.778000Z&quot;}}" data-execution_count="8">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>w</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="8">
+<pre><code>WalletSnapshot(timestamp_utc='2026-01-01T00:00:00+00:00', wallet_address='n1wallet', tag='test', node_id=2196, identity_key='identity', balances=BalanceBreakdown(delegated_unym=1, self_bonded_unym=2, spendable_unym=3, locked_unym=0, rewards_operator_commissions_unym=4, rewards_staking_rewards_unym=0, rewards_unlocked_unym=0), source='spectre')</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="wallet-node-metadata-node_id-identity_key" class="level2">
+<h2 class="anchored" data-anchor-id="wallet-node-metadata-node_id-identity_key">Wallet → node metadata (node_id, identity_key)</h2>
+<p>Intent: enrich snapshots with node identity when the wallet owns a node.</p>
+<p>This uses <code>get_owned_nym_node</code>.</p>
+<div id="86e41f96" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-10T20:12:11.779976Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-10T20:12:11.779838Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-10T20:12:11.845942Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-10T20:12:11.845107Z&quot;}}" data-execution_count="9">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="va">MIXNET_CONTRACT</span><span class="op">=</span><span class="st">'n17srjznxl9dvzdkpwpw24gg668wc73val88a6m5ajg6ankwvz9wtst0cznr'</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="va">WALLET</span><span class="op">=</span><span class="st">'n127c69pasr35p76amfczemusnutr8mtw78s8xl7'</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="va">Q</span><span class="op">=</span><span class="va">$(</span><span class="bu">printf</span> <span class="st">'%s'</span> <span class="st">'{"get_owned_nym_node":{"address":"'"</span><span class="va">${WALLET}</span><span class="st">"'"}}'</span> <span class="kw">|</span> <span class="fu">base64</span> <span class="at">-w</span> 0<span class="va">)</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> <span class="st">"https://api.nymtech.net/cosmwasm/wasm/v1/contract/</span><span class="va">${MIXNET_CONTRACT}</span><span class="st">/smart/</span><span class="va">${Q}</span><span class="st">"</span> <span class="kw">|</span> <span class="ex">jq</span> <span class="st">'.'</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>{
+  "data": {
+    "address": "n127c69pasr35p76amfczemusnutr8mtw78s8xl7",
+    "details": {
+      "bond_information": {
+        "node_id": 2196,
+        "owner": "n127c69pasr35p76amfczemusnutr8mtw78s8xl7",
+        "original_pledge": {
+          "denom": "unym",
+          "amount": "15000000000"
+        },
+        "bonding_height": 16380988,
+        "is_unbonding": false,
+        "node": {
+          "host": "94.143.231.195",
+          "custom_http_port": 8080,
+          "identity_key": "E67dRcrMNsEpNvRAxvFTkvMyqigTYpRWUYYPm25rDuGQ"
+        }
+      },
+      "rewarding_details": {
+        "cost_params": {
+          "profit_margin_percent": "0.2",
+          "interval_operating_cost": {
+            "denom": "unym",
+            "amount": "80000000"
+          }
+        },
+        "operator": "17390256719.521210907713593052",
+        "delegates": "257303535287.147314054693885213",
+        "total_unit_reward": "66135334.77153225699149127",
+        "unit_delegation": "1000000000",
+        "last_rewarded_epoch": 28393,
+        "unique_delegations": 4
+      },
+      "pending_changes": {
+        "pledge_change": null,
+        "cost_params_change": 2291
+      }
+    }
+  }
+}</code></pre>
+</div>
+</div>
+<p>Intent: parse owned-node details from smart-query response for a wallet.</p>
+<hr>
+<section id="get_owned_node_details" class="level3">
+<h3 class="anchored" data-anchor-id="get_owned_node_details">get_owned_node_details</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_owned_node_details(</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    session:Any, wallet_address:<span class="bu">str</span>, nyx_wasm_rest:<span class="bu">str</span>, mixnet_contract:<span class="bu">str</span>, timeout:<span class="bu">int</span><span class="op">=</span><span class="dv">20</span>, logger:NoneType<span class="op">=</span><span class="va">None</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>)<span class="op">-&gt;</span>Tuple[Optional[<span class="bu">int</span>], <span class="bu">str</span>, <span class="bu">int</span>]:</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><em>Returns (node_id, identity_key, self_bonded_unym_from_original_pledge).</em></p>
+<p>If wallet has no owned node: (None, ““, 0).</p>
+<div id="3f7246fa" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-10T20:12:11.852651Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-10T20:12:11.852467Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-10T20:12:11.855231Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-10T20:12:11.854628Z&quot;}}" data-execution_count="11">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>fake <span class="op">=</span> _FakeSession([_FakeResp({<span class="st">"data"</span>: {<span class="st">"ok"</span>: <span class="va">True</span>}})])</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="co"># This fake returns no bond information, so node metadata should be empty.</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>nid, ik, pledge <span class="op">=</span> get_owned_node_details(fake, <span class="st">"n1"</span>, nyx_wasm_rest<span class="op">=</span><span class="st">"x"</span>, mixnet_contract<span class="op">=</span><span class="st">"c"</span>)</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> nid <span class="kw">is</span> <span class="va">None</span> <span class="kw">and</span> ik <span class="op">==</span> <span class="st">""</span> <span class="kw">and</span> pledge <span class="op">==</span> <span class="dv">0</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+</section>
+<section id="source-1-spectre-balance-parser" class="level2">
+<h2 class="anchored" data-anchor-id="source-1-spectre-balance-parser">Source 1: Spectre balance parser</h2>
+<p>Intent: parse Spectre response into our normalized <code>BalanceBreakdown</code> (unym ints).</p>
+<p>We keep this pure: “JSON in → dataclass out”.</p>
+<div id="f4e39ff1" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-10T20:12:11.856851Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-10T20:12:11.856694Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-10T20:12:12.520896Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-10T20:12:12.520142Z&quot;}}" data-execution_count="12">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="va">WALLET</span><span class="op">=</span><span class="st">"n127c69pasr35p76amfczemusnutr8mtw78s8xl7"</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="va">URL</span><span class="op">=</span><span class="st">"https://api.nym.spectredao.net/api/v1/balances/</span><span class="va">${WALLET}</span><span class="st">"</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> <span class="st">"</span><span class="va">$URL</span><span class="st">"</span> <span class="kw">|</span> <span class="ex">jq</span> <span class="st">'.'</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>{
+  "delegated": {
+    "amount": 200977025706,
+    "denom": "unym"
+  },
+  "locked": {
+    "amount": 0,
+    "denom": "unym"
+  },
+  "rewards": {
+    "operator_commissions": {
+      "amount": 2390256719,
+      "denom": "unym"
+    },
+    "staking_rewards": {
+      "amount": 441855607,
+      "denom": "unym"
+    },
+    "unlocked": {
+      "amount": 0,
+      "denom": "unym"
+    }
+  },
+  "self_bonded": {
+    "amount": 15000000000,
+    "denom": "unym"
+  },
+  "spendable": {
+    "amount": 60639227,
+    "denom": "unym"
+  },
+  "total": {
+    "amount": 218869777259,
+    "denom": "unym"
+  }
+}</code></pre>
+</div>
+</div>
+<p>Intent: normalize Spectre numeric amount fields to integer <code>unym</code>.</p>
+<hr>
+<section id="balances_from_spectre_json" class="level3">
+<h3 class="anchored" data-anchor-id="balances_from_spectre_json">balances_from_spectre_json</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> balances_from_spectre_json(</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>    js:Dict[<span class="bu">str</span>, Any]</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>)<span class="op">-&gt;</span>BalanceBreakdown:</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="6a16dd39" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-10T20:12:12.528270Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-10T20:12:12.528094Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-10T20:12:12.531646Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-10T20:12:12.530802Z&quot;}}" data-execution_count="14">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>example <span class="op">=</span> {</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="st">"delegated"</span>: {<span class="st">"amount"</span>: <span class="dv">200977025706</span>, <span class="st">"denom"</span>: <span class="st">"unym"</span>},</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"locked"</span>: {<span class="st">"amount"</span>: <span class="dv">0</span>, <span class="st">"denom"</span>: <span class="st">"unym"</span>},</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">"rewards"</span>: {</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>      <span class="st">"operator_commissions"</span>: {<span class="st">"amount"</span>: <span class="dv">2215364099</span>, <span class="st">"denom"</span>: <span class="st">"unym"</span>},</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>      <span class="st">"staking_rewards"</span>: {<span class="st">"amount"</span>: <span class="dv">280778666</span>, <span class="st">"denom"</span>: <span class="st">"unym"</span>},</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>      <span class="st">"unlocked"</span>: {<span class="st">"amount"</span>: <span class="dv">0</span>, <span class="st">"denom"</span>: <span class="st">"unym"</span>}</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>  },</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>  <span class="st">"self_bonded"</span>: {<span class="st">"amount"</span>: <span class="dv">15000000000</span>, <span class="st">"denom"</span>: <span class="st">"unym"</span>},</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>  <span class="st">"spendable"</span>: {<span class="st">"amount"</span>: <span class="dv">60639227</span>, <span class="st">"denom"</span>: <span class="st">"unym"</span>},</span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>  <span class="st">"total"</span>: {<span class="st">"amount"</span>: <span class="dv">218533807698</span>, <span class="st">"denom"</span>: <span class="st">"unym"</span>},</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>b <span class="op">=</span> balances_from_spectre_json(example)</span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> b.total_unym() <span class="op">==</span> <span class="dv">218533807698</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+</section>
+<section id="source-1-spectre-fetcher" class="level2">
+<h2 class="anchored" data-anchor-id="source-1-spectre-fetcher">Source 1: Spectre fetcher</h2>
+<p>Intent: fetch Spectre balance JSON and convert it into <code>BalanceBreakdown</code>.</p>
+<hr>
+<section id="fetch_balances_spectre" class="level3">
+<h3 class="anchored" data-anchor-id="fetch_balances_spectre">fetch_balances_spectre</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> fetch_balances_spectre(</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    session:Any, wallet_address:<span class="bu">str</span>,</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>    spectre_balance_url:<span class="bu">str</span><span class="op">=</span><span class="st">'https://api.nym.spectredao.net/api/v1/balances/</span><span class="sc">{address}</span><span class="st">'</span>, timeout:<span class="bu">int</span><span class="op">=</span><span class="dv">20</span>,</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>    logger:NoneType<span class="op">=</span><span class="va">None</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>)<span class="op">-&gt;</span>BalanceBreakdown:</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="138a4f86" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-10T20:12:12.537590Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-10T20:12:12.537438Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-10T20:12:12.539706Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-10T20:12:12.539143Z&quot;}}" data-execution_count="16">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># offline verify: we only test the parser above.</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="bu">callable</span>(fetch_balances_spectre)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Intent: run the same helper against the real API so notebook readers can inspect actual values (without failing tests if network is unavailable).</p>
+<div id="2cc4416b" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-10T20:12:12.541532Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-10T20:12:12.541374Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-10T20:12:13.115871Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-10T20:12:13.115239Z&quot;}}" data-execution_count="17">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>live_session <span class="op">=</span> build_session(<span class="st">"nym-node-reward-tracker/notebook-live"</span>)</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>live_wallet <span class="op">=</span> <span class="st">"n127c69pasr35p76amfczemusnutr8mtw78s8xl7"</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>live_spectre <span class="op">=</span> fetch_balances_spectre(live_session, live_wallet)</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="bu">isinstance</span>(live_spectre, BalanceBreakdown)</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>live_spectre</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="17">
+<pre><code>BalanceBreakdown(delegated_unym=200977025706, self_bonded_unym=15000000000, spendable_unym=60639227, locked_unym=0, rewards_operator_commissions_unym=2390256719, rewards_staking_rewards_unym=441855607, rewards_unlocked_unym=0)</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="source-2-cosmos-snapshot-builder-best-effort-chain-native" class="level2">
+<h2 class="anchored" data-anchor-id="source-2-cosmos-snapshot-builder-best-effort-chain-native">Source 2: Cosmos snapshot builder (best-effort, chain-native)</h2>
+<p>Intent: query the bank module for <code>unym</code> spendable balance.</p>
+<div id="38e310e1" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-10T20:12:13.117847Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-10T20:12:13.117668Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-10T20:12:13.177093Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-10T20:12:13.176510Z&quot;}}" data-execution_count="18">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="va">WALLET</span><span class="op">=</span><span class="st">"n127c69pasr35p76amfczemusnutr8mtw78s8xl7"</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="va">NYX_BANK_REST</span><span class="op">=</span><span class="st">"https://api.nymtech.net/cosmos/bank/v1beta1"</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="va">URL</span><span class="op">=</span><span class="st">"</span><span class="va">${NYX_BANK_REST}</span><span class="st">/balances/</span><span class="va">${WALLET}</span><span class="st">"</span></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> <span class="st">"</span><span class="va">$URL</span><span class="st">"</span> <span class="kw">|</span> <span class="ex">jq</span> <span class="st">'.'</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>{
+  "balances": [
+    {
+      "denom": "unym",
+      "amount": "60639227"
+    }
+  ],
+  "pagination": {
+    "next_key": null,
+    "total": "1"
+  }
+}</code></pre>
+</div>
+</div>
+<p>Intent: fetch spendable <code>unym</code> from bank balances endpoint.</p>
+<hr>
+<section id="fetch_spendable_unym_bank" class="level3">
+<h3 class="anchored" data-anchor-id="fetch_spendable_unym_bank">fetch_spendable_unym_bank</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> fetch_spendable_unym_bank(</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>    session:Any, wallet_address:<span class="bu">str</span>, nyx_bank_rest:<span class="bu">str</span><span class="op">=</span><span class="st">'https://api.nymtech.net/cosmos/bank/v1beta1'</span>, timeout:<span class="bu">int</span><span class="op">=</span><span class="dv">20</span>,</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>    logger:NoneType<span class="op">=</span><span class="va">None</span></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>)<span class="op">-&gt;</span><span class="bu">int</span>:</span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="0c70b904" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-10T20:12:13.183708Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-10T20:12:13.183536Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-10T20:12:13.186229Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-10T20:12:13.185774Z&quot;}}" data-execution_count="20">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>sample_bank <span class="op">=</span> {<span class="st">"balances"</span>: [{<span class="st">"denom"</span>: <span class="st">"unym"</span>, <span class="st">"amount"</span>: <span class="st">"123"</span>}]}</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> _BankSession:</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> get(<span class="va">self</span>, url, params<span class="op">=</span><span class="va">None</span>, timeout<span class="op">=</span><span class="dv">0</span>):</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> _FakeResp(sample_bank)</span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> fetch_spendable_unym_bank(_BankSession(), <span class="st">"n1"</span>, nyx_bank_rest<span class="op">=</span><span class="st">"https://x"</span>) <span class="op">==</span> <span class="dv">123</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Intent: list current delegations for a wallet (smart query), and sum principal amounts in unym.</p>
+<div id="293d55cc" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-10T20:12:13.188109Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-10T20:12:13.187937Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-10T20:12:13.252715Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-10T20:12:13.251970Z&quot;}}" data-execution_count="21">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>WALLET<span class="op">=</span><span class="st">"n127c69pasr35p76amfczemusnutr8mtw78s8xl7"</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>NYX_WASM_REST<span class="op">=</span><span class="st">"https://api.nymtech.net/cosmwasm/wasm/v1/contract"</span></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>MIXNET_CONTRACT<span class="op">=</span><span class="st">"n17srjznxl9dvzdkpwpw24gg668wc73val88a6m5ajg6ankwvz9wtst0cznr"</span></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Single-page example of get_delegator_delegations (like one call inside get_delegator_delegations_current)</span></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>PAYLOAD<span class="op">=</span>$(jq <span class="op">-</span>cn <span class="op">--</span>arg w <span class="st">"$WALLET"</span> <span class="st">'{get_delegator_delegations:{delegator:$w, limit:5</span><span class="sc">}}</span><span class="st">'</span>)</span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>echo $PAYLOAD</span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>Q<span class="op">=</span>$(printf <span class="st">'</span><span class="sc">%s</span><span class="st">'</span> <span class="st">"$PAYLOAD"</span> <span class="op">|</span> base64 <span class="op">-</span>w <span class="dv">0</span>)</span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>curl <span class="op">-</span>s <span class="st">"$</span><span class="sc">{NYX_WASM_REST}</span><span class="st">/$</span><span class="sc">{MIXNET_CONTRACT}</span><span class="st">/smart/$</span><span class="sc">{Q}</span><span class="st">"</span> <span class="op">|</span> jq <span class="st">'.'</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>{"get_delegator_delegations":{"delegator":"n127c69pasr35p76amfczemusnutr8mtw78s8xl7","limit":5}}
+{
+  "data": {
+    "delegations": [
+      {
+        "owner": "n127c69pasr35p76amfczemusnutr8mtw78s8xl7",
+        "node_id": 2933,
+        "cumulative_reward_ratio": "669788.748216958693826745",
+        "amount": {
+          "denom": "unym",
+          "amount": "200977025706"
+        },
+        "height": 22222929,
+        "proxy": null
+      }
+    ],
+    "start_next_after": [
+      2933,
+      "n127c69pasr35p76amfczemusnutr8mtw78s8xl7"
+    ]
+  }
+}</code></pre>
+</div>
+</div>
+<p>Intent: fetch current delegations and provide a principal summation helper.</p>
+<hr>
+</section>
+<section id="sum_delegated_unym" class="level3">
+<h3 class="anchored" data-anchor-id="sum_delegated_unym">sum_delegated_unym</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> sum_delegated_unym(</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>    delegations:List[Dict[<span class="bu">str</span>, Any]]</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>)<span class="op">-&gt;</span><span class="bu">int</span>:</span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+<section id="get_delegator_delegations_current" class="level3">
+<h3 class="anchored" data-anchor-id="get_delegator_delegations_current">get_delegator_delegations_current</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_delegator_delegations_current(</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>    session:Any, wallet_address:<span class="bu">str</span>, nyx_wasm_rest:<span class="bu">str</span>, mixnet_contract:<span class="bu">str</span>, limit:<span class="bu">int</span><span class="op">=</span><span class="dv">200</span>, max_pages:<span class="bu">int</span><span class="op">=</span><span class="dv">50</span>,</span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>    timeout:<span class="bu">int</span><span class="op">=</span><span class="dv">20</span>, logger:NoneType<span class="op">=</span><span class="va">None</span></span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>)<span class="op">-&gt;</span>List[Dict[<span class="bu">str</span>, Any]]:</span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><em>Returns a flat list of delegations from contract query <code>get_delegator_delegations</code>,</em> handling pagination via <code>start_after</code> if present.</p>
+<div id="a0ba16fb" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-10T20:12:13.260935Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-10T20:12:13.260779Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-10T20:12:13.263426Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-10T20:12:13.262704Z&quot;}}" data-execution_count="23">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> sum_delegated_unym([{<span class="st">"amount"</span>: {<span class="st">"amount"</span>: <span class="st">"10"</span>, <span class="st">"denom"</span>: <span class="st">"unym"</span>}}, {<span class="st">"amount"</span>: {<span class="st">"amount"</span>: <span class="st">"2"</span>}}]) <span class="op">==</span> <span class="dv">12</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Intent: fetch pending delegator reward for a (delegator,node_id) pair and return unym int.</p>
+<div id="a5ad1cdb" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-10T20:12:13.265067Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-10T20:12:13.264907Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-10T20:12:13.329557Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-10T20:12:13.329062Z&quot;}}" data-execution_count="24">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="va">WALLET</span><span class="op">=</span><span class="st">"n127c69pasr35p76amfczemusnutr8mtw78s8xl7"</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="va">NODE_ID</span><span class="op">=</span><span class="st">"2933"</span></span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a><span class="va">NYX_WASM_REST</span><span class="op">=</span><span class="st">"https://api.nymtech.net/cosmwasm/wasm/v1/contract"</span></span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a><span class="va">MIXNET_CONTRACT</span><span class="op">=</span><span class="st">"n17srjznxl9dvzdkpwpw24gg668wc73val88a6m5ajg6ankwvz9wtst0cznr"</span></span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a><span class="va">PAYLOAD</span><span class="op">=</span><span class="va">$(</span><span class="ex">jq</span> <span class="at">-cn</span> <span class="at">--arg</span> w <span class="st">"</span><span class="va">$WALLET</span><span class="st">"</span> <span class="at">--argjson</span> n <span class="st">"</span><span class="va">$NODE_ID</span><span class="st">"</span> <span class="st">'{get_pending_delegator_reward:{address:$w,node_id:$n}}'</span><span class="va">)</span></span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="va">$PAYLOAD</span></span>
+<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a><span class="va">Q</span><span class="op">=</span><span class="va">$(</span><span class="bu">printf</span> <span class="st">'%s'</span> <span class="st">"</span><span class="va">$PAYLOAD</span><span class="st">"</span> <span class="kw">|</span> <span class="fu">base64</span> <span class="at">-w</span> 0<span class="va">)</span></span>
+<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> <span class="st">"</span><span class="va">${NYX_WASM_REST}</span><span class="st">/</span><span class="va">${MIXNET_CONTRACT}</span><span class="st">/smart/</span><span class="va">${Q}</span><span class="st">"</span> <span class="kw">|</span> <span class="ex">jq</span> <span class="st">'.'</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>{"get_pending_delegator_reward":{"address":"n127c69pasr35p76amfczemusnutr8mtw78s8xl7","node_id":2933}}
+{
+  "data": {
+    "amount_staked": {
+      "denom": "unym",
+      "amount": "200977025706"
+    },
+    "amount_earned": {
+      "denom": "unym",
+      "amount": "441855607"
+    },
+    "amount_earned_detailed": "441855607.324003049500983703",
+    "mixnode_still_fully_bonded": true,
+    "node_still_fully_bonded": true
+  }
+}</code></pre>
+</div>
+</div>
+<p>Intent: fetch pending delegator reward amount for a node and wallet.</p>
+<hr>
+</section>
+<section id="get_pending_delegator_reward_unym" class="level3">
+<h3 class="anchored" data-anchor-id="get_pending_delegator_reward_unym">get_pending_delegator_reward_unym</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_pending_delegator_reward_unym(</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>    session:Any, nyx_wasm_rest:<span class="bu">str</span>, mixnet_contract:<span class="bu">str</span>, node_id:<span class="bu">int</span>, delegator:<span class="bu">str</span>, timeout:<span class="bu">int</span><span class="op">=</span><span class="dv">20</span>,</span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>    logger:NoneType<span class="op">=</span><span class="va">None</span></span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>)<span class="op">-&gt;</span><span class="bu">int</span>:</span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Intent: provide a tiny fake session for deterministic verification of pending-reward query parsing.</p>
+<div id="89fffe6b" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-10T20:12:13.336424Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-10T20:12:13.336272Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-10T20:12:13.339002Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-10T20:12:13.338521Z&quot;}}" data-execution_count="26">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> _PendingSession:</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> get(<span class="va">self</span>, url, params<span class="op">=</span><span class="va">None</span>, timeout<span class="op">=</span><span class="dv">0</span>):</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> _FakeResp({<span class="st">"data"</span>: {<span class="st">"amount_earned"</span>: {<span class="st">"amount"</span>: <span class="st">"77"</span>, <span class="st">"denom"</span>: <span class="st">"unym"</span>}}})</span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> get_pending_delegator_reward_unym(</span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>    _PendingSession(),</span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>    nyx_wasm_rest<span class="op">=</span><span class="st">"https://x"</span>,</span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a>    mixnet_contract<span class="op">=</span><span class="st">"c"</span>,</span>
+<span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a>    node_id<span class="op">=</span><span class="dv">1</span>,</span>
+<span id="cb32-10"><a href="#cb32-10" aria-hidden="true" tabindex="-1"></a>    delegator<span class="op">=</span><span class="st">"n1"</span>,</span>
+<span id="cb32-11"><a href="#cb32-11" aria-hidden="true" tabindex="-1"></a>) <span class="op">==</span> <span class="dv">77</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Intent: fetch pending operator reward if available. Because the exact query variant may differ across contract versions, we implement <strong>a conservative fallback strategy</strong>:</p>
+<ol type="1">
+<li>try <code>get_pending_operator_reward</code> by owner address</li>
+<li>try <code>get_pending_node_operator_reward</code> by node_id</li>
+<li>else return 0 (and let higher-level code report “unavailable” if desired)</li>
+</ol>
+<div id="3bb83cec" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-10T20:12:13.340954Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-10T20:12:13.340799Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-10T20:12:13.404712Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-10T20:12:13.404101Z&quot;}}" data-execution_count="27">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>WALLET<span class="op">=</span><span class="st">"n127c69pasr35p76amfczemusnutr8mtw78s8xl7"</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>NODE_ID<span class="op">=</span><span class="st">"2933"</span></span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>NYX_WASM_REST<span class="op">=</span><span class="st">"https://api.nymtech.net/cosmwasm/wasm/v1/contract"</span></span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>MIXNET_CONTRACT<span class="op">=</span><span class="st">"n17srjznxl9dvzdkpwpw24gg668wc73val88a6m5ajg6ankwvz9wtst0cznr"</span></span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Attempt 1 (same as function): address-based get_pending_operator_reward</span></span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a>PAYLOAD<span class="op">=</span>$(jq <span class="op">-</span>cn <span class="op">--</span>arg w <span class="st">"$WALLET"</span> <span class="st">'{get_pending_operator_reward:{address:$w</span><span class="sc">}}</span><span class="st">'</span>)</span>
+<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a>echo $PAYLOAD</span>
+<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a>Q<span class="op">=</span>$(printf <span class="st">'</span><span class="sc">%s</span><span class="st">'</span> <span class="st">"$PAYLOAD"</span> <span class="op">|</span> base64 <span class="op">-</span>w <span class="dv">0</span>)</span>
+<span id="cb33-10"><a href="#cb33-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-11"><a href="#cb33-11" aria-hidden="true" tabindex="-1"></a>curl <span class="op">-</span>s <span class="st">"$</span><span class="sc">{NYX_WASM_REST}</span><span class="st">/$</span><span class="sc">{MIXNET_CONTRACT}</span><span class="st">/smart/$</span><span class="sc">{Q}</span><span class="st">"</span> <span class="op">|</span> jq <span class="st">'.'</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>{"get_pending_operator_reward":{"address":"n127c69pasr35p76amfczemusnutr8mtw78s8xl7"}}
+{
+  "data": {
+    "amount_staked": {
+      "denom": "unym",
+      "amount": "15000000000"
+    },
+    "amount_earned": {
+      "denom": "unym",
+      "amount": "2390256719"
+    },
+    "amount_earned_detailed": "2390256719.521210907713593052",
+    "mixnode_still_fully_bonded": true,
+    "node_still_fully_bonded": true
+  }
+}</code></pre>
+</div>
+</div>
+<p>Intent: fetch pending operator reward amount for wallet-owned node when available.</p>
+<hr>
+</section>
+<section id="get_pending_operator_reward_unym" class="level3">
+<h3 class="anchored" data-anchor-id="get_pending_operator_reward_unym">get_pending_operator_reward_unym</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_pending_operator_reward_unym(</span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>    session:Any, nyx_wasm_rest:<span class="bu">str</span>, mixnet_contract:<span class="bu">str</span>, owner_address:<span class="bu">str</span>, node_id:Optional[<span class="bu">int</span>], timeout:<span class="bu">int</span><span class="op">=</span><span class="dv">20</span>,</span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>    logger:NoneType<span class="op">=</span><span class="va">None</span></span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>)<span class="op">-&gt;</span><span class="bu">int</span>:</span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="dbebcc97" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-10T20:12:13.412287Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-10T20:12:13.412124Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-10T20:12:13.415335Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-10T20:12:13.414635Z&quot;}}" data-execution_count="29">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="co"># verify_get_pending_operator_reward_unym</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> _OpSession:</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> get(<span class="va">self</span>, <span class="op">*</span>args, <span class="op">**</span>kwargs):</span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>        <span class="kw">class</span> R:</span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>            status_code <span class="op">=</span> <span class="dv">200</span></span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>            text <span class="op">=</span> <span class="st">"</span><span class="sc">{}</span><span class="st">"</span></span>
+<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a>            <span class="kw">def</span> raise_for_status(<span class="va">self</span>): <span class="cf">return</span> <span class="va">None</span></span>
+<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a>            <span class="kw">def</span> json(<span class="va">self</span>):</span>
+<span id="cb36-9"><a href="#cb36-9" aria-hidden="true" tabindex="-1"></a>                <span class="cf">return</span> {<span class="st">"data"</span>: {<span class="st">"amount_earned"</span>: {<span class="st">"amount"</span>: <span class="st">"7"</span>}}}</span>
+<span id="cb36-10"><a href="#cb36-10" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> R()</span>
+<span id="cb36-11"><a href="#cb36-11" aria-hidden="true" tabindex="-1"></a>out <span class="op">=</span> get_pending_operator_reward_unym(</span>
+<span id="cb36-12"><a href="#cb36-12" aria-hidden="true" tabindex="-1"></a>    _OpSession(),</span>
+<span id="cb36-13"><a href="#cb36-13" aria-hidden="true" tabindex="-1"></a>    nyx_wasm_rest<span class="op">=</span><span class="st">"https://x"</span>,</span>
+<span id="cb36-14"><a href="#cb36-14" aria-hidden="true" tabindex="-1"></a>    mixnet_contract<span class="op">=</span><span class="st">"c"</span>,</span>
+<span id="cb36-15"><a href="#cb36-15" aria-hidden="true" tabindex="-1"></a>    owner_address<span class="op">=</span><span class="st">"n1"</span>,</span>
+<span id="cb36-16"><a href="#cb36-16" aria-hidden="true" tabindex="-1"></a>    node_id<span class="op">=</span><span class="dv">14</span>,</span>
+<span id="cb36-17"><a href="#cb36-17" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb36-18"><a href="#cb36-18" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> out <span class="op">==</span> <span class="dv">7</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="4a837f9b" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-10T20:12:13.416916Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-10T20:12:13.416760Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-10T20:12:13.419150Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-10T20:12:13.418463Z&quot;}}" data-execution_count="30">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="bu">callable</span>(get_pending_operator_reward_unym)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+</section>
+<section id="cosmos-snapshot-assembly" class="level2">
+<h2 class="anchored" data-anchor-id="cosmos-snapshot-assembly">Cosmos snapshot assembly</h2>
+<p>Intent: build the full <code>BalanceBreakdown</code> from Cosmos endpoints + smart queries.</p>
+<hr>
+<section id="fetch_balances_cosmos" class="level3">
+<h3 class="anchored" data-anchor-id="fetch_balances_cosmos">fetch_balances_cosmos</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> fetch_balances_cosmos(</span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>    session:Any, wallet_address:<span class="bu">str</span>, nyx_wasm_rest:<span class="bu">str</span>, nyx_bank_rest:<span class="bu">str</span>, mixnet_contract:<span class="bu">str</span>, timeout:<span class="bu">int</span><span class="op">=</span><span class="dv">20</span>,</span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>    logger:NoneType<span class="op">=</span><span class="va">None</span></span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>)<span class="op">-&gt;</span>Tuple[BalanceBreakdown, Optional[<span class="bu">int</span>], <span class="bu">str</span>]:</span>
+<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="18babc04" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-10T20:12:13.426764Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-10T20:12:13.426596Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-10T20:12:13.428970Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-10T20:12:13.428333Z&quot;}}" data-execution_count="32">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="bu">callable</span>(fetch_balances_cosmos)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Intent: run the cosmos snapshot helper against real APIs so readers can inspect chain-native values without breaking tests when network is unavailable.</p>
+<div id="2cbbf156" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-10T20:12:13.430590Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-10T20:12:13.430435Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-10T20:12:13.559469Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-10T20:12:13.558627Z&quot;}}" data-execution_count="33">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>live_session <span class="op">=</span> build_session(<span class="st">"nym-node-reward-tracker/notebook-live"</span>)</span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>live_wallet <span class="op">=</span> <span class="st">"n127c69pasr35p76amfczemusnutr8mtw78s8xl7"</span></span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>live_cosmos_balances, live_cosmos_node_id, live_cosmos_identity_key <span class="op">=</span> fetch_balances_cosmos(</span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>    live_session,</span>
+<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a>    live_wallet,</span>
+<span id="cb40-7"><a href="#cb40-7" aria-hidden="true" tabindex="-1"></a>    nyx_wasm_rest<span class="op">=</span>DEFAULT_NYX_WASM_REST,</span>
+<span id="cb40-8"><a href="#cb40-8" aria-hidden="true" tabindex="-1"></a>    nyx_bank_rest<span class="op">=</span>DEFAULT_NYX_BANK_REST,</span>
+<span id="cb40-9"><a href="#cb40-9" aria-hidden="true" tabindex="-1"></a>    mixnet_contract<span class="op">=</span>DEFAULT_MIXNET_CONTRACT,</span>
+<span id="cb40-10"><a href="#cb40-10" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb40-11"><a href="#cb40-11" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="bu">isinstance</span>(live_cosmos_balances, BalanceBreakdown)</span>
+<span id="cb40-12"><a href="#cb40-12" aria-hidden="true" tabindex="-1"></a>live_cosmos_balances</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="33">
+<pre><code>BalanceBreakdown(delegated_unym=200977025706, self_bonded_unym=15000000000, spendable_unym=60639227, locked_unym=0, rewards_operator_commissions_unym=2390256719, rewards_staking_rewards_unym=441855607, rewards_unlocked_unym=0)</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="snapshot-orchestration" class="level2">
+<h2 class="anchored" data-anchor-id="snapshot-orchestration">Snapshot orchestration</h2>
+<p>Intent: for each wallet, pick source → fetch balances → emit <code>WalletSnapshot</code>.</p>
+<p>All network calls are inside fetch functions; this orchestration is “pure glue”.</p>
+<hr>
+<section id="build_wallet_snapshot" class="level3">
+<h3 class="anchored" data-anchor-id="build_wallet_snapshot">build_wallet_snapshot</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> build_wallet_snapshot(</span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>    session:Any, wallet_address:<span class="bu">str</span>, tag:<span class="bu">str</span>, source:SnapshotSource, nyx_wasm_rest:<span class="bu">str</span>, nyx_bank_rest:<span class="bu">str</span>,</span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>    mixnet_contract:<span class="bu">str</span>, spectre_balance_url:<span class="bu">str</span>, timeout:<span class="bu">int</span>, logger</span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>)<span class="op">-&gt;</span>WalletSnapshot:</span>
+<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="d058dd17" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-10T20:12:13.567217Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-10T20:12:13.567041Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-10T20:12:13.571016Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-10T20:12:13.570168Z&quot;}}" data-execution_count="35">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb43"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="co"># verify_build_wallet_snapshot</span></span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> _S:</span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> get(<span class="va">self</span>, <span class="op">*</span>args, <span class="op">**</span>kwargs):</span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a>        <span class="kw">class</span> R:</span>
+<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a>            status_code <span class="op">=</span> <span class="dv">200</span></span>
+<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a>            text <span class="op">=</span> <span class="st">"</span><span class="sc">{}</span><span class="st">"</span></span>
+<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a>            <span class="kw">def</span> raise_for_status(<span class="va">self</span>): <span class="cf">return</span> <span class="va">None</span></span>
+<span id="cb43-8"><a href="#cb43-8" aria-hidden="true" tabindex="-1"></a>            <span class="kw">def</span> json(<span class="va">self</span>):</span>
+<span id="cb43-9"><a href="#cb43-9" aria-hidden="true" tabindex="-1"></a>                <span class="cf">return</span> {<span class="st">"data"</span>: {<span class="st">"details"</span>: <span class="va">None</span>}, <span class="st">"balances"</span>: []}</span>
+<span id="cb43-10"><a href="#cb43-10" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> R()</span>
+<span id="cb43-11"><a href="#cb43-11" aria-hidden="true" tabindex="-1"></a>ws <span class="op">=</span> build_wallet_snapshot(</span>
+<span id="cb43-12"><a href="#cb43-12" aria-hidden="true" tabindex="-1"></a>    _S(),</span>
+<span id="cb43-13"><a href="#cb43-13" aria-hidden="true" tabindex="-1"></a>    wallet_address<span class="op">=</span><span class="st">"n1"</span>,</span>
+<span id="cb43-14"><a href="#cb43-14" aria-hidden="true" tabindex="-1"></a>    tag<span class="op">=</span><span class="st">"t"</span>,</span>
+<span id="cb43-15"><a href="#cb43-15" aria-hidden="true" tabindex="-1"></a>    source<span class="op">=</span><span class="st">"spectre"</span>,</span>
+<span id="cb43-16"><a href="#cb43-16" aria-hidden="true" tabindex="-1"></a>    nyx_wasm_rest<span class="op">=</span><span class="st">"https://x"</span>,</span>
+<span id="cb43-17"><a href="#cb43-17" aria-hidden="true" tabindex="-1"></a>    nyx_bank_rest<span class="op">=</span><span class="st">"https://x"</span>,</span>
+<span id="cb43-18"><a href="#cb43-18" aria-hidden="true" tabindex="-1"></a>    mixnet_contract<span class="op">=</span><span class="st">"c"</span>,</span>
+<span id="cb43-19"><a href="#cb43-19" aria-hidden="true" tabindex="-1"></a>    spectre_balance_url<span class="op">=</span><span class="st">"https://x/</span><span class="sc">{address}</span><span class="st">"</span>,</span>
+<span id="cb43-20"><a href="#cb43-20" aria-hidden="true" tabindex="-1"></a>    timeout<span class="op">=</span><span class="dv">1</span>,</span>
+<span id="cb43-21"><a href="#cb43-21" aria-hidden="true" tabindex="-1"></a>    logger<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb43-22"><a href="#cb43-22" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb43-23"><a href="#cb43-23" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> ws.wallet_address <span class="op">==</span> <span class="st">"n1"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="b0f91485" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-10T20:12:13.572986Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-10T20:12:13.572809Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-10T20:12:13.575477Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-10T20:12:13.574735Z&quot;}}" data-execution_count="36">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="bu">callable</span>(build_wallet_snapshot)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+</section>
+<section id="persistence-and-history" class="level2">
+<h2 class="anchored" data-anchor-id="persistence-and-history">Persistence and history</h2>
+<p>Intent: store a rolling per-wallet history (default 30 days) in YAML.</p>
+<p>We store <strong>unym totals</strong> only (lossless, minimal). Later, if desired, extend with more fields.</p>
+<hr>
+<section id="scaled_window_change_unym" class="level3">
+<h3 class="anchored" data-anchor-id="scaled_window_change_unym">scaled_window_change_unym</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> scaled_window_change_unym(</span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>    history:Dict[<span class="bu">str</span>, Any], wallet:<span class="bu">str</span>, now_ts:<span class="bu">float</span>, window_days:<span class="bu">float</span>, current_total_unym:<span class="bu">int</span></span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>)<span class="op">-&gt;</span>Optional[Dict[<span class="bu">str</span>, Any]]:</span>
+<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+<section id="record_history_point" class="level3">
+<h3 class="anchored" data-anchor-id="record_history_point">record_history_point</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb46"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> record_history_point(</span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>    history:Dict[<span class="bu">str</span>, Any], wallet:<span class="bu">str</span>, ts:<span class="bu">float</span>, total_unym:<span class="bu">int</span></span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>)<span class="op">-&gt;</span><span class="va">None</span>:</span>
+<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+<section id="prune_history_older_than" class="level3">
+<h3 class="anchored" data-anchor-id="prune_history_older_than">prune_history_older_than</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb47"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> prune_history_older_than(</span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>    history:Dict[<span class="bu">str</span>, Any], cutoff_ts:<span class="bu">float</span></span>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>)<span class="op">-&gt;</span>Dict[<span class="bu">str</span>, Any]:</span>
+<span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="27466cc2" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-10T20:12:13.584040Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-10T20:12:13.583909Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-10T20:12:13.586513Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-10T20:12:13.585938Z&quot;}}" data-execution_count="38">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb48"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>h <span class="op">=</span> {<span class="st">"w"</span>: [{<span class="st">"ts"</span>: <span class="fl">0.0</span>, <span class="st">"total_unym"</span>: <span class="dv">10</span>}]}</span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>out <span class="op">=</span> scaled_window_change_unym(h, wallet<span class="op">=</span><span class="st">"w"</span>, now_ts<span class="op">=</span><span class="dv">8</span> <span class="op">*</span> <span class="dv">24</span> <span class="op">*</span> <span class="dv">3600</span>, window_days<span class="op">=</span><span class="dv">7</span>, current_total_unym<span class="op">=</span><span class="dv">17</span>)</span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> out <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+</section>
+<section id="tabular-output-latest-snapshot" class="level2">
+<h2 class="anchored" data-anchor-id="tabular-output-latest-snapshot">Tabular output (latest snapshot)</h2>
+<p>Intent: write a simple “latest snapshot” table file (overwritten each run) for quick inspection and downstream tooling. Format is selected by extension (<code>.csv</code> or <code>.xlsx</code>).</p>
+<hr>
+<section id="log_snapshot_table" class="level3">
+<h3 class="anchored" data-anchor-id="log_snapshot_table">log_snapshot_table</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb49"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> log_snapshot_table(</span>
+<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>    rows:List[WalletSnapshot], history:Dict[<span class="bu">str</span>, Any], now_ts:<span class="bu">float</span>, logger</span>
+<span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a>)<span class="op">-&gt;</span><span class="va">None</span>:</span>
+<span id="cb49-5"><a href="#cb49-5" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+<section id="write_latest_snapshot_csv" class="level3">
+<h3 class="anchored" data-anchor-id="write_latest_snapshot_csv">write_latest_snapshot_csv</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb50"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> write_latest_snapshot_csv(</span>
+<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>    rows:List[WalletSnapshot], out_path:<span class="bu">str</span> <span class="op">|</span> Path</span>
+<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a>)<span class="op">-&gt;</span><span class="va">None</span>:</span>
+<span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="4aed0743" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-10T20:12:13.597747Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-10T20:12:13.597594Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-10T20:12:13.599953Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-10T20:12:13.599328Z&quot;}}" data-execution_count="40">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb51"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tempfile <span class="im">import</span> TemporaryDirectory</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="cbadd580" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-10T20:12:13.601356Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-10T20:12:13.601235Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-10T20:12:13.785910Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-10T20:12:13.785032Z&quot;}}" data-execution_count="41">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb52"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>sample <span class="op">=</span> WalletSnapshot(</span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>    timestamp_utc<span class="op">=</span><span class="st">"2026-01-01T00:00:00+00:00"</span>,</span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a>    wallet_address<span class="op">=</span><span class="st">"n1wallet"</span>,</span>
+<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a>    tag<span class="op">=</span><span class="st">"test"</span>,</span>
+<span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a>    node_id<span class="op">=</span><span class="dv">2196</span>,</span>
+<span id="cb52-6"><a href="#cb52-6" aria-hidden="true" tabindex="-1"></a>    identity_key<span class="op">=</span><span class="st">"identity"</span>,</span>
+<span id="cb52-7"><a href="#cb52-7" aria-hidden="true" tabindex="-1"></a>    balances<span class="op">=</span>BalanceBreakdown(</span>
+<span id="cb52-8"><a href="#cb52-8" aria-hidden="true" tabindex="-1"></a>        delegated_unym<span class="op">=</span><span class="dv">1_500_000</span>,</span>
+<span id="cb52-9"><a href="#cb52-9" aria-hidden="true" tabindex="-1"></a>        self_bonded_unym<span class="op">=</span><span class="dv">2_000_000</span>,</span>
+<span id="cb52-10"><a href="#cb52-10" aria-hidden="true" tabindex="-1"></a>        spendable_unym<span class="op">=</span><span class="dv">250_000</span>,</span>
+<span id="cb52-11"><a href="#cb52-11" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb52-12"><a href="#cb52-12" aria-hidden="true" tabindex="-1"></a>    source<span class="op">=</span><span class="st">"spectre"</span>,</span>
+<span id="cb52-13"><a href="#cb52-13" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb52-14"><a href="#cb52-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-15"><a href="#cb52-15" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> TemporaryDirectory() <span class="im">as</span> td:</span>
+<span id="cb52-16"><a href="#cb52-16" aria-hidden="true" tabindex="-1"></a>    p_csv <span class="op">=</span> Path(td) <span class="op">/</span> <span class="st">"latest.csv"</span></span>
+<span id="cb52-17"><a href="#cb52-17" aria-hidden="true" tabindex="-1"></a>    write_latest_snapshot_csv([sample], p_csv)</span>
+<span id="cb52-18"><a href="#cb52-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">assert</span> p_csv.exists()</span>
+<span id="cb52-19"><a href="#cb52-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-20"><a href="#cb52-20" aria-hidden="true" tabindex="-1"></a>    p_xlsx <span class="op">=</span> Path(td) <span class="op">/</span> <span class="st">"latest.xlsx"</span></span>
+<span id="cb52-21"><a href="#cb52-21" aria-hidden="true" tabindex="-1"></a>    write_latest_snapshot_csv([sample], p_xlsx)</span>
+<span id="cb52-22"><a href="#cb52-22" aria-hidden="true" tabindex="-1"></a>    <span class="cf">assert</span> p_xlsx.exists()</span>
+<span id="cb52-23"><a href="#cb52-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-24"><a href="#cb52-24" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="bu">callable</span>(log_snapshot_table)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+</section>
+<section id="main-entry-point-run_snapshot" class="level2">
+<h2 class="anchored" data-anchor-id="main-entry-point-run_snapshot">Main entry point: run_snapshot</h2>
+<p>Intent: the CLI-facing function <code>run_snapshot(...)</code>:</p>
+<ul>
+<li>loads wallets</li>
+<li>fetches snapshots</li>
+<li>updates history yaml</li>
+<li>writes latest table output (<code>.csv</code> or <code>.xlsx</code>)</li>
+<li>logs a compact report including 7d/30d scaled change</li>
+</ul>
+<hr>
+<section id="run_snapshot" class="level3">
+<h3 class="anchored" data-anchor-id="run_snapshot">run_snapshot</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb53"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> run_snapshot(</span>
+<span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a>    data_dir:<span class="bu">str</span> <span class="op">|</span> Path<span class="op">=</span>Path(<span class="st">'data'</span>), wallets_csv:<span class="bu">str</span> <span class="op">|</span> Path<span class="op">=</span><span class="st">'wallet-addresses.csv'</span>,</span>
+<span id="cb53-4"><a href="#cb53-4" aria-hidden="true" tabindex="-1"></a>    out_csv:<span class="bu">str</span> <span class="op">|</span> Path<span class="op">=</span><span class="st">'node-balances.csv'</span>, hist_file:<span class="bu">str</span> <span class="op">|</span> Path<span class="op">=</span><span class="st">'data.yaml'</span>, source:SnapshotSource<span class="op">=</span><span class="st">'spectre'</span>,</span>
+<span id="cb53-5"><a href="#cb53-5" aria-hidden="true" tabindex="-1"></a>    nyx_wasm_rest:<span class="bu">str</span><span class="op">=</span><span class="st">'https://api.nymtech.net/cosmwasm/wasm/v1/contract'</span>,</span>
+<span id="cb53-6"><a href="#cb53-6" aria-hidden="true" tabindex="-1"></a>    nyx_bank_rest:<span class="bu">str</span><span class="op">=</span><span class="st">'https://api.nymtech.net/cosmos/bank/v1beta1'</span>,</span>
+<span id="cb53-7"><a href="#cb53-7" aria-hidden="true" tabindex="-1"></a>    mixnet_contract:<span class="bu">str</span><span class="op">=</span><span class="st">'n17srjznxl9dvzdkpwpw24gg668wc73val88a6m5ajg6ankwvz9wtst0cznr'</span>,</span>
+<span id="cb53-8"><a href="#cb53-8" aria-hidden="true" tabindex="-1"></a>    spectre_balance_url:<span class="bu">str</span> <span class="op">|</span> <span class="va">None</span><span class="op">=</span><span class="st">'https://api.nym.spectredao.net/api/v1/balances/</span><span class="sc">{address}</span><span class="st">'</span>,</span>
+<span id="cb53-9"><a href="#cb53-9" aria-hidden="true" tabindex="-1"></a>    spectre_nodes_url:<span class="bu">str</span> <span class="op">|</span> <span class="va">None</span><span class="op">=</span><span class="va">None</span>, validator_bonded_url:<span class="bu">str</span> <span class="op">|</span> <span class="va">None</span><span class="op">=</span><span class="va">None</span>, validator_described_url:<span class="bu">str</span> <span class="op">|</span> <span class="va">None</span><span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb53-10"><a href="#cb53-10" aria-hidden="true" tabindex="-1"></a>    history_days:<span class="bu">int</span><span class="op">=</span><span class="dv">30</span>, timeout:<span class="bu">int</span><span class="op">=</span><span class="dv">20</span>, log_file:<span class="bu">str</span> <span class="op">|</span> <span class="va">None</span><span class="op">=</span><span class="va">None</span>, log_level:<span class="bu">str</span><span class="op">=</span><span class="st">'INFO'</span></span>
+<span id="cb53-11"><a href="#cb53-11" aria-hidden="true" tabindex="-1"></a>)<span class="op">-&gt;</span><span class="bu">int</span>:</span>
+<span id="cb53-12"><a href="#cb53-12" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="2eaec0db" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-10T20:12:13.795671Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-10T20:12:13.795539Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-10T20:12:13.797789Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-10T20:12:13.797190Z&quot;}}" data-execution_count="43">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb54"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="co"># verify_run_snapshot_use</span></span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tempfile <span class="im">import</span> TemporaryDirectory</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="8d911632" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-10T20:12:13.799206Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-10T20:12:13.799087Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-10T20:12:13.802815Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-10T20:12:13.802316Z&quot;}}" data-execution_count="44">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb55"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> TemporaryDirectory() <span class="im">as</span> td:</span>
+<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a>    data_dir <span class="op">=</span> Path(td)</span>
+<span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a>    wallets <span class="op">=</span> data_dir <span class="op">/</span> <span class="st">"__missing__.csv"</span></span>
+<span id="cb55-4"><a href="#cb55-4" aria-hidden="true" tabindex="-1"></a>    wallets.write_text(<span class="st">"address,tag</span><span class="ch">\n</span><span class="st">"</span>, encoding<span class="op">=</span><span class="st">"utf-8"</span>)</span>
+<span id="cb55-5"><a href="#cb55-5" aria-hidden="true" tabindex="-1"></a>    rc <span class="op">=</span> run_snapshot(data_dir<span class="op">=</span><span class="bu">str</span>(data_dir), wallets_csv<span class="op">=</span><span class="st">"__missing__.csv"</span>)</span>
+<span id="cb55-6"><a href="#cb55-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">assert</span> <span class="bu">isinstance</span>(rc, <span class="bu">int</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>2026-02-10T21:12:13 | ERROR | nym_snapshot | No wallets found in /tmp/tmpifhcmw9g/__missing__.csv</code></pre>
+</div>
+</div>
+<div id="6c1f116e" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-10T20:12:13.804662Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-10T20:12:13.804479Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-10T20:12:13.806876Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-10T20:12:13.806255Z&quot;}}" data-execution_count="45">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb57"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="co"># verify_run_snapshot_signature</span></span>
+<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> run_snapshot.<span class="va">__name__</span> <span class="op">==</span> <span class="st">"run_snapshot"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="008229d9" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-10T20:12:13.808443Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-10T20:12:13.808276Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-10T20:12:13.810877Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-10T20:12:13.810131Z&quot;}}" data-execution_count="46">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb58"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="bu">callable</span>(run_snapshot)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/cs224\.github\.io\/nym-node-reward-tracker");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/cs224/nym-node-reward-tracker/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>
