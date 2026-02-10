@@ -1,0 +1,9 @@
+project:
+  output-dir: _docs
+
+website:
+  title: "nym_node_reward_tracker"
+  site-url: "https://cs224.github.io/nym-node-reward-tracker"
+  description: "Track Nym node rewards and export reward withdrawal transactions"
+  repo-branch: main
+  repo-url: "https://github.com/cs224/nym-node-reward-tracker"

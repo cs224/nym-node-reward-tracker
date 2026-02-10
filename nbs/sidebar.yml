@@ -1,0 +1,17 @@
+website:
+  sidebar:
+    contents:
+      - index.ipynb
+      - 00_common.ipynb
+      - 00_cosmos_tx_parsing.ipynb
+      - 01_snapshot.ipynb
+      - 02_cache.ipynb
+      - 03_epoch_by_epoch.ipynb
+      - 03_reward_transactions.ipynb
+      - 10_cli.ipynb
+      - 99_tests.ipynb
+      - nbdev.yml
+      - nym_cache.log
+      - nym_tax_rewards_export.log
+      - sidebar.yml
+      - styles.css

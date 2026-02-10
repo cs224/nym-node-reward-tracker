@@ -1,0 +1,37 @@
+project:
+  type: website
+
+#execute:
+#  enabled: true
+
+format:
+  html:
+    theme: cosmo
+    css: styles.css
+    toc: true
+    keep-md: true
+
+    # Optional but often helpful: use full layout when margins are empty
+    page-layout: full
+    html-math-method: mathjax
+
+    # Main control: widen the grid components
+    grid:
+      sidebar-width: 280px
+      body-width: 1200px
+      margin-width: 200px
+      gutter-width: 1.5rem
+  commonmark:
+      variant: +tex_math_dollars
+
+website:
+  twitter-card: true
+  open-graph: true
+  repo-actions: [issue]
+  navbar:
+    background: primary
+    search: true
+  sidebar:
+    style: floating
+
+metadata-files: [nbdev.yml, sidebar.yml]

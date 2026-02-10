@@ -1,0 +1,28 @@
+$schema: 'https://raw.githubusercontent.com/context-hub/generator/refs/heads/main/json-schema.json'
+tools:
+  - id: nb-export
+    description: "Export Jupyter notebooks to markdown for CTX ingestion"
+    type: run
+    commands:
+      - cmd: bash
+        args:
+          - -lc
+          - >
+            rm -rf .context/notebooks &&
+            mkdir -p .context/notebooks &&
+            uv run python -m jupyter nbconvert
+            --to markdown
+            --output-dir .context/notebooks
+            $(git ls-files '*.ipynb')
+
+documents:
+  - description: "Notebooks (rendered)"
+    outputPath: "notebooks.md"
+    sources:
+      - type: file
+        sourcePaths: [".context/notebooks"]
+        filePattern:
+          - "[0-8]*.md"
+          - "index.md"
+        # notPath:
+        #  - "9"

@@ -1,0 +1,2804 @@
+```python
+#| hide
+from IPython.display import display, HTML
+
+```
+
+
+```python
+#| hide
+for css in ["<style>.container { width:70% !important; }</style>", "<style>:root { --jp-notebook-max-width: 70% !important; }</style>"]:
+    display(HTML(css))
+
+```
+
+
+<style>.container { width:70% !important; }</style>
+
+
+
+<style>:root { --jp-notebook-max-width: 70% !important; }</style>
+
+
+# Nym node reward tracker (docs index)
+
+This page is the landing entry point for the nbdev2/Quarto documentation. It gives a high-level map of the codebase, shows how notebooks map to generated Python modules, and points to the CLI entry points.
+
+For full operational workflow details, use `README.md` in the repo root.
+
+
+## Code structure overview
+
+This project is notebook-first (`nbs/` is the source of truth). Exported Python modules are generated in `nym_node_reward_tracker/`.
+
+Core modules and notebook sources:
+
+- `nym_node_reward_tracker/common.py` <- [`00_common`](common.html)
+- `nym_node_reward_tracker/cosmos_tx_parsing.py` <- [`00_cosmos_tx_parsing`](cosmos_tx_parsing.html)
+- `nym_node_reward_tracker/snapshot.py` <- [`01_snapshot`](snapshot.html)
+- `nym_node_reward_tracker/cache.py` <- [`02_cache`](cache.html)
+- `nym_node_reward_tracker/reward_transactions.py` <- [`03_reward_transactions`](reward_transactions.html)
+- `nym_node_reward_tracker/epoch_by_epoch.py` <- [`03_epoch_by_epoch`](epoch_by_epoch.html)
+- `nym_node_reward_tracker/cli.py` and `__main__.py` <- [`10_cli`](cli.html)
+
+
+## CLI commands and where they live
+
+| CLI subcommand | Notebook source | Generated module | Purpose | Primary outputs |
+|---|---|---|---|---|
+| `snapshot` | [`01_snapshot`](snapshot.html) | `snapshot.py` | Snapshot operator rewards + uptime and update rolling history | `data/node-balances.csv` (or `.xlsx`) + `data/data.yaml` |
+| `reward-transactions` | [`03_reward_transactions`](reward_transactions.html) | `reward_transactions.py` | Export reward-withdrawal txs and add fiat pricing | `--out` (`.csv` / `.xlsx`) |
+| `cache` | [`02_cache`](cache.html) | `cache.py` | Scan chain tx history into a local SQLite event cache | `data/nym_cache.sqlite` |
+| `epoch-by-epoch` | [`03_epoch_by_epoch`](epoch_by_epoch.html) | `epoch_by_epoch.py` | Replay epoch earnings from cached events into Excel sheets | `data/epoch_by_epoch_rewards.xlsx` (default path when `--data-dir data`) |
+
+Minimal CLI usage:
+
+```bash
+cd nym-node-reward-tracker
+make sync
+uv run nym-node-reward-tracker --help
+uv run nym-node-reward-tracker reward-transactions --wallets data/wallet-addresses.csv --out data/nym_rewards_2025_eur.csv
+```
+
+
+## Pipelines (data flow)
+
+- Snapshot pipeline
+  Inputs: wallet list (default `data/wallet-addresses.csv`).
+  Outputs: balances/uptime snapshot and rolling history in `data/data.yaml`.
+- Reward transactions pipeline
+  Inputs: wallets + optional date range.
+  Steps: tx search -> reward-withdraw filtering -> amount extraction -> CoinGecko pricing.
+  Outputs: CSV/XLSX (suffix-based `--out`).
+- Cache pipeline
+  Inputs: wallets.
+  Steps: discover nodes -> scan tx history in block-height windows -> store minimal extracted events.
+  Output: SQLite cache (`data/nym_cache.sqlite`) for incremental reruns.
+- Epoch-by-epoch pipeline
+  Inputs: cache DB (refreshed first by the command).
+  Steps: replay canonical `(node_id, epoch)` earnings from cached events.
+  Outputs: Excel workbook sheets (`wallet_seed_epoch_earnings`, `wallet_all_epoch_earnings`, `node_epoch_totals`).
+
+
+## Ground truth for reward semantics (Mixnet smart contract)
+
+This tracker reconstructs rewards from chain events and APIs, but canonical operator/delegator reward behavior is defined in the Nym mixnet CosmWasm contract.
+
+Start here:
+
+- `mixnode.rs` (core node reward state and reward/withdraw methods):
+  - [GitHub](https://github.com/nymtech/nym/blob/develop/common/cosmwasm-smart-contracts/mixnet-contract/src/mixnode.rs)
+  - [Raw](https://raw.githubusercontent.com/nymtech/nym/refs/heads/develop/common/cosmwasm-smart-contracts/mixnet-contract/src/mixnode.rs)
+
+Also directly relevant:
+
+- [`reward_params.rs`](https://github.com/nymtech/nym/blob/develop/common/cosmwasm-smart-contracts/mixnet-contract/src/reward_params.rs) - defines global rewarding parameters (`reward_pool`, `epoch_reward_budget`, updates).
+- [`rewarding/mod.rs`](https://github.com/nymtech/nym/blob/develop/common/cosmwasm-smart-contracts/mixnet-contract/src/rewarding/mod.rs) - reward distribution helpers/types used by mixnode reward logic.
+- [`delegation.rs`](https://github.com/nymtech/nym/blob/develop/common/cosmwasm-smart-contracts/mixnet-contract/src/delegation.rs) - delegation structure and reward-ratio context used for delegator rewards.
+- [`interval.rs`](https://github.com/nymtech/nym/blob/develop/common/cosmwasm-smart-contracts/mixnet-contract/src/interval.rs) - epoch/interval timeline semantics that gate when rewards/events are advanced.
+- [`events.rs`](https://github.com/nymtech/nym/blob/develop/common/cosmwasm-smart-contracts/mixnet-contract/src/events.rs) - canonical event names/attributes (including withdraw and node rewarding events).
+- [`pending_events.rs`](https://github.com/nymtech/nym/blob/develop/common/cosmwasm-smart-contracts/mixnet-contract/src/pending_events.rs) - pending epoch/interval events model for delayed execution semantics.
+- [`msg.rs`](https://github.com/nymtech/nym/blob/develop/common/cosmwasm-smart-contracts/mixnet-contract/src/msg.rs) - execute/query message surface (`WithdrawOperatorReward`, `WithdrawDelegatorReward`, rewarding queries).
+
+
+## Where to go next
+
+- For CLI flags and examples: [`10_cli`](cli.html)
+- For shared tx/event parsing logic: [`00_cosmos_tx_parsing`](cosmos_tx_parsing.html)
+- For notebook tests and behavior checks: [`99_tests`](tests.html)
+
+
+# Manual epoch-by-epoch reward walkthrough (didactic cache replay)
+
+This section is a **didactic** reconstruction of how Nym v2 delegator rewards can be attributed **epoch-by-epoch**.
+
+What I want to achieve here:
+
+1. Start from the naive mental model ("rewards drop from the sky, split pro-rata by delegation amounts").
+2. Identify *exactly* where that model breaks.
+3. Fix each break with the smallest possible additional concept.
+4. Arrive at Nym's actual on-chain accounting model (which is the same economics, just optimized for on-chain cost).
+5. Culminate in a **cache-only** replay demo:
+   - No live Nyx API calls in this notebook.
+   - We read only from the local SQLite cache built by the `cache` command.
+
+## What we are reconstructing
+
+For each node, and each reward epoch, the chain emits a canonical event:
+
+* `wasm-v2_node_rewarding` with fields like:
+
+  * `interval_details` (epoch id)
+  * `delegates_reward` (aggregate reward for all delegators)
+  * `prior_delegates` (aggregate delegator "stake value" used for weighting)
+  * `prior_unit_reward` (a global reward index value at that epoch boundary)
+
+**Goal output:**
+
+A table (conceptually) with one row per:
+
+$$
+(\text{node_id}, \text{epoch}, \text{delegator})
+$$
+
+containing:
+
+* `delegator_reward_unym` (micro-NYM, but represented as Decimal strings in practice)
+* plus audit columns so we can verify:
+
+$$
+\sum_i r_{i,e} \approx R_e
+$$
+
+where:
+
+* $r_{i,e}$ is the reconstructed reward for delegator $i$ in epoch $e$
+* $R_e$ is the on-chain event aggregate `delegates_reward` for epoch $e$
+
+
+
+## Notation (math-first), with mapping to chain fields
+
+We work per **node** (fixed `node_id`). Everything below is scoped to one node.
+
+### Epoch-level quantities
+
+At reward epoch $e$, the chain event provides:
+
+* $R_e$ = `delegates_reward`
+  *Aggregate reward for all delegators in this epoch.*
+
+* $U_e$ = `prior_unit_reward`
+  *A "reward index" (global meter) value at the epoch boundary.*
+
+* $P_e$ = `prior_delegates`
+  *The aggregate delegator stake value used by the contract as the denominator.*
+
+There is also a node constant:
+
+* $D$ = `unit_delegation`
+  *A stabilizing offset used in the contract's ratio math.* Usually a large number, e.g. `1_000_000_000`.
+
+### Delegator-level state variables (conceptual)
+
+Each delegator $i$ has state tracked by the contract:
+
+* $a_i$ : delegated "amount" (principal-like; it changes on delegation/undelegation and can absorb pending rewards)
+* $c_i$ : "cumulative reward ratio"
+  This is the **bookmark**: *the index level at which the delegator was last synchronized.* Don't worry if you do not understand right now. This will become clear below.
+
+Mapping to contract fields:
+
+* $a_i$ corresponds to delegation `amount` in `get_node_delegations(...)`
+* $c_i$ corresponds to `cumulative_reward_ratio` in `get_node_delegations(...)`
+* $U_e$, $P_e$, $R_e$ come from `wasm-v2_node_rewarding` event attributes.
+
+### Units note
+
+* Amounts like `delegates_reward` are micro-NYM ("unym") but represented as Decimal strings in many places.
+* Ratio-like values like `prior_unit_reward` and `cumulative_reward_ratio` are also Decimal strings (not micro-NYM).
+* We do **all math with `Decimal`** to avoid float drift.
+
+
+## The "aha" upfront (what would be simple and correct)
+
+If we ignore on-chain cost constraints, the **simple but correct** way to do delegator distribution per epoch is:
+
+1. At the epoch boundary, compute each delegator's **stake value** $V_{i,e}$ that represents their economic weight *at that time*.<br>
+   This is the sum of the origianl delegated "amount" $a_i$ plus accrued rewards up until that epoch boundary.
+2. Split the epoch's aggregate reward $R_e$ pro-rata by those stake values:
+
+$$
+r_{i,e} = R_e \cdot \frac{V_{i,e}}{\sum_j V_{j,e}}
+$$
+
+3. Update each delegator's stake value by adding their share (compounding):
+
+$$
+V_{i,e+1} = V_{i,e} + r_{i,e}
+$$
+
+This is easy to understand and (economically) correct.
+
+**But it requires touching every delegator every epoch.**
+That is the core reason Nym uses a more sophisticated accounting representation:
+
+* it preserves the same economics,
+* while avoiding $O(N)$ per-epoch work on-chain.
+
+**Everything that follows is essentially the "optimization ladder" from that simple approach to Nym's implementation**.
+
+
+## Imports and numeric precision
+
+We set a high Decimal precision for stable replay math.
+
+
+```python
+from __future__ import annotations
+
+import sqlite3
+import tempfile
+from dataclasses import dataclass
+from decimal import Decimal, getcontext
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
+```
+
+
+```python
+import pandas as pd
+```
+
+
+```python
+getcontext().prec = 60
+```
+
+## Display tuning (for readable tables)
+
+Intent: keep DataFrame output readable during diagnostics.
+
+
+```python
+def configure_display_options() -> None:
+    pd.set_option("display.max_columns", 200)
+    pd.set_option("display.width", 1200)
+    pd.set_option("display.max_colwidth", 200)
+```
+
+
+```python
+configure_display_options()
+assert pd.get_option("display.max_columns") == 200
+```
+
+## Iteration ladder: naive → correct → optimized
+
+## Iteration 0 – Naive model: split epoch reward pro-rata by delegation amounts
+
+Naive idea:
+
+1. The node earns a delegator lump sum $R_e$ each epoch.
+2. Look at delegation amounts $a_i$ at that time.
+3. Split:
+
+$$
+r_{i,e} = R_e \cdot \frac{a_i}{\sum_j a_j}
+$$
+
+This model *feels right*, but breaks as soon as:
+
+* delegations change over time,
+* rewards compound (unwithdrawn rewards matter),
+* withdrawals reset a delegator’s baseline,
+* and on-chain cost constraints prevent updating everyone every epoch.
+
+
+
+### Define helper: naive pro-rata split
+
+Intent: encode the naive rule $r_i = R \cdot a_i / \sum a$ and verify a static toy case.
+
+
+```python
+def naive_prorata_split(total_reward: Decimal, amounts: Dict[str, Decimal]) -> Dict[str, Decimal]:
+    denom = sum(amounts.values(), Decimal(0))
+    if denom == 0:
+        return {k: Decimal(0) for k in amounts}
+    return {k: (total_reward * v / denom) for k, v in amounts.items()}
+```
+
+
+```python
+toy_amounts = {"A": Decimal("100"), "B": Decimal("300")}
+toy_split = naive_prorata_split(Decimal("40"), toy_amounts)
+
+assert toy_split["A"] == Decimal("10")
+assert toy_split["B"] == Decimal("30")
+assert sum(toy_split.values(), Decimal(0)) == Decimal("40")
+```
+
+## Iteration 1 – Problem: "When exactly do we measure stake?"
+
+If you measure $a_i$ *at epoch end*, a delegator can join at the last second and get paid for the whole epoch.
+
+Toy story:
+
+* Epoch reward to delegators is $R = 20$.
+* Delegator A was active the whole epoch with $a_A = 100$.
+* Delegator B delegates **right before epoch ends** with $a_B = 100$.
+
+Naive end-of-epoch split:
+
+$$
+r_A = 20 \cdot \frac{100}{200} = 10, \quad
+r_B = 10
+$$
+
+But economically, if B was not active for the epoch, a natural fairness rule is:
+
+* only *active-at-epoch* stake is eligible.
+
+This is exactly why you see event names like **pending delegation** in many staking systems:
+
+* you request delegation now,
+* it becomes active at a boundary (e.g. next epoch).
+
+
+### Smallest fix #1: split only over the active set
+
+Intent: introduce a minimal *active set* $A_e$ and split only over those participants:
+
+$$
+r_{i,e} =
+\begin{cases}
+R_e \cdot \dfrac{a_i}{\sum_{j \in A_e} a_j}, & \text{if } i \in A_e \\
+0, & \text{if } i \notin A_e
+\end{cases}
+$$
+
+
+
+```python
+def prorata_over_active_set(
+    total_reward: Decimal,
+    amounts: Dict[str, Decimal],
+    active: List[str],
+) -> Dict[str, Decimal]:
+    active_amounts = {k: amounts[k] for k in active if k in amounts}
+    raw = naive_prorata_split(total_reward, active_amounts)
+    out = {k: Decimal(0) for k in amounts}
+    out.update(raw)
+    return out
+```
+
+
+```python
+amounts = {"A": Decimal("100"), "B": Decimal("100")}
+
+end_of_epoch_naive = naive_prorata_split(Decimal("20"), amounts)
+activation_rule = prorata_over_active_set(Decimal("20"), amounts, active=["A"])
+
+assert end_of_epoch_naive == {"A": Decimal("10"), "B": Decimal("10")}
+assert activation_rule == {"A": Decimal("20"), "B": Decimal("0")}
+```
+
+## Iteration 2 – Problem: splitting by principal ignores compounding / "stake value"
+
+Even if we fix timing, a second issue appears:
+
+* A delegator who has been in longer has unwithdrawn rewards.
+* Those rewards matter economically: they should increase weight (*compounding*) unless withdrawn.
+
+Toy story:
+
+* Epoch 1: Only A is active, with principal $a_A = 100$.
+  Delegator reward is $R_1 = 10$.
+  So A gets 10.
+
+Now at the start of Epoch 2:
+
+* Suppose those 10 rewards are still economically associated with A’s stake (not withdrawn).
+* So A’s *stake value* is 110.
+* B joins with principal 100.
+
+Epoch 2 delegator reward is $R_2 = 21$.
+
+* If we split by principal, weights are $100 : 100$, so A gets $10.5$.
+* If we split by value, weights are $110 : 100$, so A gets $11$.
+
+That difference is **not a rounding artifact**: it is the economic effect of compounding and staying in longer.
+
+
+### Smallest fix #2: split by stake value $V_i$ instead of principal $a_i$
+
+Replace $a_i$ by $V_i$ in the pro-rata formula:
+
+$$
+r_{i,e} = R_e \cdot \frac{V_{i,e}}{\sum_j V_{j,e}}
+$$
+
+This fixes compounding—but immediately creates a new problem:
+we now need to know $V_{i,e}$ for each delegator at each epoch.
+
+
+
+```python
+def value_weighted_split(total_reward: Decimal, values: Dict[str, Decimal]) -> Dict[str, Decimal]:
+    return naive_prorata_split(total_reward, values)
+```
+
+
+```python
+principal = {"A": Decimal("100"), "B": Decimal("100")}
+value = {"A": Decimal("110"), "B": Decimal("100")}
+
+split_by_principal = naive_prorata_split(Decimal("21"), principal)
+split_by_value = value_weighted_split(Decimal("21"), value)
+
+assert split_by_principal["A"] == Decimal("10.5")
+assert split_by_value["A"] == Decimal("11")
+assert split_by_value["B"] == Decimal("10")
+```
+
+## Iteration 3 – The simple and correct approach (and why it is too expensive on-chain)
+
+At this point, the **simple and correct** approach would be:
+
+* Maintain $V_{i,e}$ for every delegator.
+* Every epoch:
+
+  1. compute total $V_e = \sum_i V_{i,e}$,
+  2. assign $r_{i,e} = R_e \cdot V_{i,e} / V_e$,
+  3. update $V_{i,e+1} = V_{i,e} + r_{i,e}$.
+
+This is straightforward—but it implies:
+
+* Each epoch requires iterating over all delegators:
+
+  * $O(N)$ reads and $O(N)$ writes to update all $V_i$.
+
+In a smart-contract chain, that means:
+
+* high gas / CPU usage,
+* large state churn,
+* and poor scalability.
+
+**So the remaining complexity is *only* an optimization**:
+
+> keep the same economics while avoiding per-epoch, per-delegator state updates.
+
+
+## Iteration 4 – Optimization: a global reward index (meter) + per-delegator bookmark
+
+This is the classic on-chain optimization pattern:
+
+* Keep a **global meter** (reward index) $I$ that advances once per epoch.
+* Each delegator stores only a **bookmark** $c_i$: the meter reading at which that delegator was last synchronized.
+
+Then:
+
+* epoch work becomes $O(1)$ (advance the global meter),
+* delegator work happens only when the delegator interacts (delegate / undelegate / withdraw).
+
+This is where the phrase comes from:
+
+> “the index level at which your accrued was last synchronized”
+
+That index level is exactly the bookmark $c_i$.
+
+
+### Deep dive: why a per-delegator bookmark $c_i$ is *still* cheaper than per-epoch accrued tracking
+
+A common confusion is:
+
+* “But $c_i$ is still stored per delegator — how is that cheaper?”
+
+Answer: **the cost driver is update frequency**, not existence.
+
+#### Naive accrued-counter model
+
+If you store `accrued_i` and update it every epoch:
+
+* Each epoch touches every delegator:
+
+  * reads: $O(N)$
+  * writes: $O(N)$
+
+That is $O(N)$ state churn per epoch.
+
+#### Index + bookmark model
+
+You store one global index $I$, and one bookmark $c_i$ per delegator.
+
+* Each epoch:
+  * update $I$ once → $O(1)$ write
+* A delegator’s $c_i$ is updated **only when they interact** (withdraw / change stake).
+
+So total writes per month look like:
+
+* naive: $\text{epochs} \times N$
+* index model: $\text{epochs} + \text{interactions}$
+
+Concrete example:
+
+* $N = 5{,}000$ delegators
+* $720$ epochs/month
+
+Naive: $720 \times 5{,}000 = 3.6\text{ million}$ delegator writes/month.
+Index model: $720$ global writes + interaction writes (often orders of magnitude smaller).
+
+Key point:
+
+* $c_i$ is **not** “another accrued counter”.
+* $c_i$ is a *bookmark* (“the meter reading when I was last settled”).
+
+
+### Define helper: compare write counts
+
+Intent: quantify the difference between naive per-epoch per-delegator updates vs index+bookmark.
+
+
+```python
+def write_counts(*, epochs: int, delegators: int, interactions: int) -> Dict[str, int]:
+    naive = epochs * delegators
+    index_bookmark = epochs + interactions
+    return {"naive": naive, "index_bookmark": index_bookmark}
+```
+
+
+```python
+counts = write_counts(epochs=720, delegators=5000, interactions=12000)
+assert counts["naive"] == 3_600_000
+assert counts["index_bookmark"] == 12_720
+```
+
+### Deep dive: what does “the index level at which your accrued was last synchronized” mean?
+
+Think of a physical meter:
+
+* There is a global meter reading $I$ that increases when rewards happen.
+* Each delegator stores a bookmark $c_i$:
+
+  * “the meter reading the last time we settled my account”.
+
+Then at any moment:
+
+$$
+\text{pending}_i = \text{position}_i \cdot (I - c_i)
+$$
+
+To **synchronize** a delegator means:
+
+1. Compute pending using the current meter $I$ and bookmark $c_i$.
+2. Then set the bookmark to “now”:
+
+$$
+c_i \leftarrow I
+$$
+
+After synchronization, pending becomes 0 (because $I - c_i = 0$).
+
+Different interactions use synchronization differently:
+
+* **Withdraw**: pay pending, then set $c_i \leftarrow I$.
+* **Stake change**: often fold pending into the stake (“rolled into baseline”), then set $c_i \leftarrow I$.
+
+Crucially:
+
+* The chain does **not** write “Alice earned X in epoch $e$”.
+* It writes “the global meter moved”, and only updates Alice when Alice touches the contract.
+
+
+## A simplest concrete index + bookmark algorithm (toy, simpler than Nym)
+
+This toy model is intentionally simpler than Nym’s.
+
+### State
+
+* Global index $I$ (starts at 0)
+* Per delegator:
+
+  * stake $s_i$ (principal)
+  * bookmark $c_i$
+
+### Epoch update
+
+* Total stake $S = \sum_i s_i$
+* Epoch reward $R$
+* Index increases by:
+
+$$
+I \leftarrow I + \frac{R}{S}
+$$
+
+### Pending
+
+$$
+\text{pending}_i = s_i \cdot (I - c_i)
+$$
+
+### Withdraw
+
+* payout = pending
+* set $c_i \leftarrow I$
+
+### Delegate more (roll pending)
+
+* compute pending
+* set $s_i \leftarrow s_i + \text{pending}_i + \Delta$
+* set $c_i \leftarrow I$
+
+Now we run a concrete multi-epoch example with asserts.
+
+
+### Define helper: a tiny delegator state container for the toy model
+
+Intent: make the toy simulation readable (`stake`, `bookmark`).
+
+
+```python
+@dataclass
+class ToyDelegator:
+    stake: Decimal
+    bookmark: Decimal
+```
+
+
+```python
+d = ToyDelegator(stake=Decimal("100"), bookmark=Decimal("0"))
+assert d.stake == Decimal("100")
+assert d.bookmark == Decimal("0")
+```
+
+### Define helper: pending in the toy model
+
+Intent: compute `pending = stake * (I - bookmark)`.
+
+
+
+```python
+def pending_linear(d: ToyDelegator, I: Decimal) -> Decimal:
+    return d.stake * (I - d.bookmark)
+```
+
+
+```python
+assert pending_linear(ToyDelegator(Decimal("2"), Decimal("0.2")), Decimal("0.5")) == Decimal("0.6")
+```
+
+### Define helper: withdraw in the toy model
+
+Intent:
+- compute payout = pending
+- update bookmark to current index
+- return payout
+
+
+```python
+def withdraw_linear(d: ToyDelegator, I: Decimal) -> Decimal:
+    payout = pending_linear(d, I)
+    d.bookmark = I
+    return payout
+```
+
+
+```python
+d = ToyDelegator(Decimal("100"), Decimal("0"))
+I = Decimal("0.40")
+payout = withdraw_linear(d, I)
+assert payout == Decimal("40")
+assert pending_linear(d, I) == Decimal("0")
+```
+
+### Define helper: delegate more (roll pending into baseline)
+
+Intent:
+- compute pending at current index
+- increase stake by pending + delta
+- reset bookmark to current index
+
+
+```python
+def delegate_more_linear(d: ToyDelegator, I: Decimal, delta: Decimal) -> None:
+    p = pending_linear(d, I)
+    d.stake = d.stake + p + delta
+    d.bookmark = I
+```
+
+
+```python
+d = ToyDelegator(Decimal("100"), Decimal("0.30"))
+I = Decimal("0.45")
+# pending = 100*(0.45-0.30)=15, add delta=100 => new stake = 215, bookmark=0.45
+delegate_more_linear(d, I, Decimal("100"))
+assert d.stake == Decimal("215")
+assert d.bookmark == Decimal("0.45")
+```
+
+### Define helper: epoch advance (update the global index)
+
+Intent:
+- given reward R and total active stake S, update I <- I + R/S.
+
+
+```python
+def epoch_advance_linear(I: Decimal, *, reward: Decimal, delegators: List[ToyDelegator]) -> Decimal:
+    S = sum((d.stake for d in delegators), Decimal(0))
+    if S == 0:
+        return I
+    return I + (reward / S)
+```
+
+
+```python
+I = Decimal("0")
+A = ToyDelegator(Decimal("100"), Decimal("0"))
+I = epoch_advance_linear(I, reward=Decimal("30"), delegators=[A])
+assert I == Decimal("0.3")
+```
+
+## Worked example (toy algorithm, with explicit numbers)
+
+We run this exact scenario:
+
+* Start: $I = 0$
+* A stakes 100 at $I = 0$ → $c_A = 0$
+* Epoch 1 reward: $R_1 = 30$, total stake $S = 100$ → $I = 0.30$
+* B joins at end → set $c_B = 0.30$, stake 100
+* Epoch 2 reward: $R_2 = 20$, total stake $S = 200$ → $I = 0.40$
+
+Then:
+
+* $\text{pending}_A = 100 \cdot (0.40 - 0) = 40$
+* $\text{pending}_B = 100 \cdot (0.40 - 0.30) = 10$
+
+A withdraws → payout 40, set $c_A \leftarrow 0.40$
+
+### Epoch 3
+
+* Reward $R_3 = 10$, total stake $S = 200$ → $I = 0.45$
+* $\text{pending}_A = 100 \cdot (0.45 - 0.40) = 5$
+* $\text{pending}_B = 100 \cdot (0.45 - 0.30) = 15$
+
+B increases stake by +100 and rolls pending:
+
+* New stake $= 100 + 15 + 100 = 215$
+* Set $c_B \leftarrow 0.45$
+
+### Epoch 4
+
+* Reward $R_4 = 31.5$, total stake $S = 315$ → $I = 0.55$
+* $\text{pending}_A = 100 \cdot (0.55 - 0.40) = 15$
+* $\text{pending}_B = 215 \cdot (0.55 - 0.45) = 21.5$
+
+
+```python
+I = Decimal("0")
+
+A = ToyDelegator(stake=Decimal("100"), bookmark=Decimal("0"))
+I = epoch_advance_linear(I, reward=Decimal("30"), delegators=[A])
+assert I == Decimal("0.30")
+
+B = ToyDelegator(stake=Decimal("100"), bookmark=I)  # joins late, bookmark = current index
+assert B.bookmark == Decimal("0.30")
+
+I = epoch_advance_linear(I, reward=Decimal("20"), delegators=[A, B])
+assert I == Decimal("0.40")
+
+assert pending_linear(A, I) == Decimal("40")
+assert pending_linear(B, I) == Decimal("10")
+
+payout_A = withdraw_linear(A, I)
+assert payout_A == Decimal("40")
+assert pending_linear(A, I) == Decimal("0")
+
+I = epoch_advance_linear(I, reward=Decimal("10"), delegators=[A, B])
+assert I == Decimal("0.45")
+
+assert pending_linear(A, I) == Decimal("5")
+assert pending_linear(B, I) == Decimal("15")
+
+delegate_more_linear(B, I, Decimal("100"))
+assert B.stake == Decimal("215")
+assert B.bookmark == Decimal("0.45")
+
+I = epoch_advance_linear(I, reward=Decimal("31.5"), delegators=[A, B])
+assert I == Decimal("0.55")
+
+assert pending_linear(A, I) == Decimal("15")
+assert pending_linear(B, I) == Decimal("21.5")
+```
+
+## Iteration 5 – Why Nym is more complex than the toy model
+
+The toy index model captures the *pattern*:
+
+* global index moves per epoch,
+* per-user bookmark settles lazily,
+* stake changes “roll pending into baseline”.
+
+But Nym’s contract uses a more complex representation because it needs:
+
+1. A value model that matches the contract’s actual state representation (`amount`, `cumulative_reward_ratio`, `unit_delegation`).
+2. A stable fixed-point calculation strategy:
+
+   * avoid division-by-zero edge cases (genesis / empty stake),
+   * remain stable under integer truncation / decimals,
+   * provide deterministic rebasing semantics.
+
+So Nym uses a **ratio-based** index $U$ with an offset $D$, and defines stake value via:
+
+$$
+V_i(U) = a_i \cdot \frac{U + D}{c_i + D}
+$$
+
+This is still “global meter + bookmark”, but expressed in different coordinates.
+
+
+## Nym’s delegator accounting model (math-first)
+
+Per delegator $i$, the contract stores:
+
+* $a_i$ : `amount`
+* $c_i$ : `cumulative_reward_ratio` (the **bookmark**, i.e. “last synchronized index”)
+
+Per node, the contract has a constant:
+
+* $D$ : `unit_delegation` (a stabilizing offset)
+
+There is also a global per-node index (the “meter”):
+
+* $U$ : “unit reward” (index)
+
+### Stake value function
+
+Define stake value at index level $U$:
+
+$$
+V_i(U) = a_i \cdot \frac{U + D}{c_i + D}
+$$
+
+Interpretation:
+
+* $c_i$ is the bookmark (“index level at last sync”).
+* When $U = c_i$, value equals amount: $V_i(c_i) = a_i$.
+* When $U > c_i$, value exceeds amount; the difference is pending reward.
+
+### Shares × index interpretation (unitization)
+
+Nym’s model is essentially the **toy index** model, but expressed as:
+
+> **shares × index** (a “unitized” position)
+
+Define a delegator’s **shares**:
+
+$$
+q_i = \frac{a_i}{c_i + D}
+$$
+
+Then the stake value formula becomes:
+
+$$
+V_i(U) = q_i \cdot (U + D)
+$$
+
+So you can read $U + D$ as a **global “price per share”**, and $q_i$ as the delegator’s **share count**.
+
+This immediately yields a very clean expression for pending rewards:
+
+$$
+\begin{aligned}
+\text{pending}_i(U)
+&= V_i(U) - a_i \
+&= q_i \cdot (U + D) - q_i \cdot (c_i + D) \
+&= q_i \cdot (U - c_i)
+\end{aligned}
+$$
+
+And it explains why $c_i$ is the “last synchronized index”:
+
+* when the delegator is synchronized (withdraw or stake-change), the contract effectively sets $c_i \leftarrow U$,
+* which resets the “since-last-sync” term $U - c_i$ to zero.
+
+The role of $D$ in this view is *just* to ensure the share price $U + D$ never hits problematic values like 0 and to stabilize fixed-point arithmetic.
+
+### Reward event provides the epoch denominator
+
+At reward epoch $e$, the chain event provides:
+
+* $U_e$ = `prior_unit_reward`
+* $P_e$ = `prior_delegates`
+
+Conceptually:
+
+$$
+P_e \approx \sum_i V_i(U_e)
+= \sum_i q_i \cdot (U_e + D)
+= (U_e + D)\sum_i q_i
+$$
+
+### The epoch reward is given as an aggregate
+
+* $R_e$ = `delegates_reward`
+
+We want per-delegator attribution $r_{i,e}$ such that:
+
+$$
+\sum_i r_{i,e} = R_e
+$$
+
+### Nym’s index jump formula
+
+Define the index jump for the epoch:
+
+$$
+\Delta U_e = R_e \cdot \frac{U_e + D}{P_e}
+$$
+
+Then the per-delegator reward increment is:
+
+$$
+r_{i,e} = a_i \cdot \frac{\Delta U_e}{c_i + D}
+$$
+
+Using the share definition $q_i = a_i / (c_i + D)$, this becomes the **shares × index** update:
+
+$$
+r_{i,e} = q_i \cdot \Delta U_e
+$$
+
+So the economics match the toy model:
+
+* the global index advances by $\Delta U_e$,
+* each delegator earns “their shares times the index increment”,
+* and per-delegator state only needs updates when the delegator interacts (which is the on-chain optimization).
+
+### Define helpers: Nym value, pending, and epoch split
+
+Intent: translate the Nym formulas into small `Decimal` helpers.
+
+We keep everything in `Decimal` and avoid floats entirely.
+
+**Sanity check: the math here matches the mixnet contract**
+
+The core formulas in this walkthrough are not “invented for the notebook” — they line up with the contract’s own reward-index bookkeeping:
+
+* **Pending (and withdraw) logic**: the contract computes a delegator’s earned amount from the *difference* between the current “reward index” and the delegator’s stored bookmark (`cumulative_reward_ratio`), scaled by `amount` and normalized by `(bookmark + unit_delegation)`. In our notation that is exactly the “since-last-sync” form
+
+  $$
+  \mathrm{pending}(U) = a \cdot \dfrac{U - c}{c + D}
+  $$
+
+  which is algebraically the same as `stake_value(a, c, U, D) - a`.
+
+  To see that this is algebraically the same as `stake_value(a, c, U, D) - a`, define the stake value and pending reward explicitly:
+
+  $$
+  V_i(U) = a_i \cdot \dfrac{U + D}{c_i + D},
+  \qquad
+  \mathrm{pending}_i(U) = V_i(U) - a_i
+  $$
+
+  Compute the difference:
+
+  $$
+  \begin{aligned}
+  \mathrm{pending}_i(U)
+  &= a_i \cdot \dfrac{U + D}{c_i + D} - a_i \\
+  &= a_i\left(\dfrac{U + D}{c_i + D} - \dfrac{c_i + D}{c_i + D}\right) \\
+  &= a_i \cdot \dfrac{(U + D) - (c_i + D)}{c_i + D} \\
+  &= a_i \cdot \dfrac{U - c_i}{c_i + D}
+  \end{aligned}
+  $$
+
+  Therefore,
+
+  $$
+  \boxed{\mathrm{pending}_i(U) = a_i \cdot \dfrac{U - c_i}{c_i + D}}
+  $$
+
+* **Epoch index jump**: the contract advances `total_unit_reward` by a quantity proportional to the epoch’s delegator reward and to $(U + D)$, normalized by the current aggregate delegator stake value. That is the notebook’s
+
+  $$
+  \Delta U = R \cdot \dfrac{U + D}{P}
+  $$
+
+  and the “next index” value is `U_after = U + dU`.
+
+
+
+
+```python
+def d(x: Any) -> Decimal:
+    if x is None or x == "":
+        return Decimal(0)
+    return Decimal(str(x))
+
+
+def stake_value_unym(a: Decimal, c: Decimal, U: Decimal, D: Decimal) -> Decimal:
+    return a * (U + D) / (c + D)
+
+
+def pending_unym(a: Decimal, c: Decimal, U: Decimal, D: Decimal) -> Decimal:
+    return stake_value_unym(a, c, U, D) - a
+
+
+def delta_u(R: Decimal, U: Decimal, D: Decimal, P: Decimal) -> Decimal:
+    if P <= 0:
+        return Decimal(0)
+    return R * (U + D) / P
+
+
+def delegator_reward_epoch(a: Decimal, c: Decimal, dU: Decimal, D: Decimal) -> Decimal:
+    return a * dU / (c + D)
+```
+
+
+```python
+D = Decimal("1000000000")
+U = Decimal("200")
+
+# Two delegators with different bookmarks.
+aA, cA = Decimal("100"), Decimal("150")
+aB, cB = Decimal("300"), Decimal("200")
+
+P_hat = stake_value_unym(aA, cA, U, D) + stake_value_unym(aB, cB, U, D)
+R = Decimal("40")
+dU = delta_u(R, U, D, P_hat)
+
+rA = delegator_reward_epoch(aA, cA, dU, D)
+rB = delegator_reward_epoch(aB, cB, dU, D)
+
+assert (rA + rB - R).copy_abs() < Decimal("1e-30")
+```
+
+## Interactions: withdraw vs delegation change (“rolled into baseline”)
+
+With the value function $V_i(U)$, two interaction semantics become simple.
+
+### Withdraw (delegator)
+
+At current index $U$:
+
+* payout $= \text{pending}_i(U) = V_i(U) - a_i$
+* bookmark resets: $c_i \leftarrow U$
+* amount stays: $a_i$ unchanged
+
+After this, pending becomes 0 immediately because $U = c_i$.
+
+### Delegate more (increase stake)
+
+At current index $U$, increase by $\Delta$.
+
+The observed on-chain behavior (“rolled into baseline”) is:
+
+1. First synchronize value into amount:
+
+   $$
+   a_i \leftarrow V_i(U)
+   $$
+
+2. Apply delta:
+
+   $$
+   a_i \leftarrow a_i + \Delta
+   $$
+
+3. Reset bookmark:
+
+   $$
+   c_i \leftarrow U
+   $$
+
+So older accrued reward disappears from *pending* because it is now part of the new baseline amount $a_i$.
+Value is not lost; it is reclassified into principal accounting.
+
+
+### Define helpers: withdraw update and rebase-with-delta update
+
+Intent: encode the two interaction rules above.
+
+These helpers are used later in the cache replay engine.
+
+
+```python
+def withdraw_update(a: Decimal, c: Decimal, U: Decimal, D: Decimal) -> Tuple[Decimal, Decimal, Decimal]:
+    payout = pending_unym(a, c, U, D)
+    new_a = a
+    new_c = U
+    return new_a, new_c, payout
+
+
+def rebase_with_delta(a: Decimal, c: Decimal, U: Decimal, D: Decimal, delta: Decimal) -> Tuple[Decimal, Decimal]:
+    rebased = stake_value_unym(a, c, U, D)
+    new_a = rebased + delta
+    if new_a < 0:
+        new_a = Decimal(0)
+    new_c = U
+    return new_a, new_c
+```
+
+
+```python
+# withdraw resets pending
+D = Decimal("1000000000")
+a = Decimal("100")
+c = Decimal("50")
+U = Decimal("70")
+
+a2, c2, payout = withdraw_update(a, c, U, D)
+assert c2 == U
+assert pending_unym(a2, c2, U, D) == Decimal("0")
+assert payout == stake_value_unym(a, c, U, D) - a
+```
+
+
+```python
+# rebase-with-delta increases amount beyond raw delta
+D = Decimal("1000000000")
+a = Decimal("100")
+c = Decimal("50")
+U = Decimal("70")
+
+new_a, new_c = rebase_with_delta(a, c, U, D, delta=Decimal("25"))
+assert new_c == U
+assert new_a > Decimal("125")  # includes rolled pending + delta
+```
+
+## Cache-only replay (no live Nyx API calls)
+
+This notebook does **not** scan the chain.
+
+To build the cache once (outside this notebook), run:
+
+```bash
+cd nym-node-reward-tracker
+uv run nym-node-reward-tracker cache
+```
+
+Default DB path is:
+
+* `data/nym_cache.sqlite`
+
+In the replay below we read:
+
+* reward events (epoch boundaries)
+* delegation/undelegation execution events
+* withdraw events
+* plus cached "current state" snapshots for reconciliation (optional but useful)
+
+All of this comes from SQLite only.
+
+
+
+
+### Import cache read API
+
+Intent: use the exported cache module to read cached rows. No network calls.
+
+
+```python
+from nym_node_reward_tracker.cache import (
+    connect_db,
+    get_cached_reward_events,
+    get_cached_delegation_events,
+    get_cached_withdraw_events,
+)
+```
+
+### Optional: import cache-backed "current state" snapshot readers (for reconciliation)
+
+If your cache module exposes these functions, they allow us to reconcile replay-final state against cached snapshots.
+
+If you don't have these functions, you can skip these cells.
+
+
+```python
+from nym_node_reward_tracker.cache import (
+    get_cached_current_delegation_state,
+    get_cached_current_rewarding_state,
+    get_cached_current_pending_reward_state,
+)
+```
+
+### Define helper: normalize cache return types
+
+Intent:
+- cache readers return either a `pandas.DataFrame` or a `list[dict]`
+- unify both into `list[dict]` for replay logic
+
+
+```python
+def rows_from_cache_obj(obj: Any) -> List[Dict[str, Any]]:
+    if hasattr(obj, "to_dict"):
+        return obj.to_dict(orient="records")
+    if isinstance(obj, list):
+        return obj
+    return []
+```
+
+
+```python
+assert rows_from_cache_obj([]) == []
+```
+
+### Define helpers: parse cached event rows into canonical Decimal/int shapes
+
+Intent: cached numeric fields are stored as TEXT. Convert to `Decimal` and normalize schema.
+
+
+```python
+def parse_reward_row(r: Dict[str, Any]) -> Dict[str, Any]:
+    return {
+        "height": int(r["height"]),
+        "epoch": int(r.get("epoch") or r.get("interval_details") or 0),
+        "txhash": str(r.get("txhash") or ""),
+        "msg_index": int(r.get("msg_index") or 0),
+        "U": d(r.get("prior_unit_reward")),
+        "P": d(r.get("prior_delegates")),
+        "R": d(r.get("delegates_reward")),
+    }
+
+
+def parse_delegation_row(r: Dict[str, Any]) -> Dict[str, Any]:
+    ev_type = str(r.get("event_type") or "")
+    who = str(r.get("delegator") or r.get("owner") or "")
+
+    # Convention used in the cache: delta_amount_unym is stored as integer micro units string,
+    # possibly negative for undelegations where amount is present.
+    delta_raw = r.get("delta_amount_unym")
+    delta = d(delta_raw)
+
+    # In some chains/contracts, an undelegation event may imply full removal without amount in event.
+    # Cache may mark it; if not, we treat certain event types as potential full removal.
+    full_remove = ev_type in {
+        "wasm-v2_undelegation",
+        "wasm-v2_pending_undelegation",
+        "wasm-v2_pending_undelegate",
+        "wasm-v2_pending_delegation_removal",
+    } and (delta_raw is None or str(delta_raw) == "")
+
+    # We want executed/effective events for state transitions.
+    is_effective = ev_type in {"wasm-v2_delegation", "wasm-v2_undelegation"}
+
+    return {
+        "height": int(r["height"]),
+        "txhash": str(r.get("txhash") or ""),
+        "event_type": ev_type,
+        "delegator": who,
+        "delta": delta,
+        "full_remove": full_remove,
+        "is_effective": is_effective,
+    }
+
+
+def parse_withdraw_row(r: Dict[str, Any]) -> Dict[str, Any]:
+    return {
+        "height": int(r["height"]),
+        "txhash": str(r.get("txhash") or ""),
+        "event_type": str(r.get("event_type") or ""),
+        "delegator": str(r.get("delegator") or ""),
+        "amount_unym": d(r.get("amount_unym")),
+    }
+```
+
+
+```python
+pr = parse_reward_row({"height": 1, "epoch": 7, "prior_unit_reward": "2", "prior_delegates": "3", "delegates_reward": "4"})
+assert pr["R"] == Decimal("4")
+
+pdv = parse_delegation_row({"height": 1, "event_type": "wasm-v2_delegation", "delegator": "A", "delta_amount_unym": "10"})
+assert pdv["delta"] == Decimal("10")
+assert pdv["is_effective"] is True
+```
+
+## Define replay engine (cache events → per-epoch per-delegator rewards)
+
+Intent: perform an event-sourced replay using only cached events.
+
+### State we maintain
+
+Per delegator $i$:
+
+* $a_i$ : amount (unym)
+* $c_i$ : bookmark (cumulative reward ratio)
+
+### Processing order
+
+* Iterate reward events in ascending `(height, msg_index)` (epoch boundaries).
+* Before each reward event at height `H`:
+
+  * apply all interaction events with `height ≤ H`:
+
+    * delegation / undelegation:
+
+      * rebase-with-delta (“rolled into baseline”) and set $c \leftarrow U$
+    * withdraw:
+
+      * set $c \leftarrow U$ (bookmark reset); amount unchanged
+
+### Reward event processing
+
+At the reward event $(U_e, P_e, R_e)$:
+
+* compute the index jump:
+
+  $$
+  \Delta U = R_e \cdot \frac{U_e + D}{P_e}
+  $$
+
+* delegator epoch reward:
+
+  $$
+  r_{i,e} = a_i \cdot \frac{\Delta U}{c_i + D}
+  $$
+
+* verify conservation:
+
+  $$
+  \sum_i r_{i,e} \approx R_e
+  $$
+
+### Output tables
+
+We emit two tables:
+
+* `epoch_totals`: one row per reward event
+* `epoch_splits`: one row per `(reward event, delegator)`
+
+
+#### How to read the output tables (`epoch_totals`, `epoch_splits`)
+
+Think of the replay as an **event-sourced state machine**:
+
+1. **Reward events are the clock ticks** (one row in `epoch_totals` each).
+2. **Delegations / undelegations / withdraws are state transitions** we apply *before* the next clock tick.
+3. At each clock tick we compute a **single global index jump** `dU`, then attribute per-delegator rewards from the *current* `(amount, bookmark)` state.
+
+##### `epoch_totals` (one row per reward event)
+
+Each row answers: “At this reward boundary, did our reconstructed state explain the chain’s aggregate numbers?”
+
+* `height`, `epoch`, `txhash`: where this reward event came from.
+* `delegators`: how many delegators are currently in replay state at this boundary (after applying interactions up to this height).
+* `U`: the **prior unit reward** at this boundary (the global reward index *before* this epoch’s jump).
+* `P_event`: the chain-reported **prior_delegates** (the epoch denominator used on-chain).
+* `P_hat`: our reconstructed denominator from replay state:
+
+$$
+P_{\hat{}} = \sum_i a_i \cdot \dfrac{U + D}{c_i + D}
+$$
+
+* `delta_P = P_hat - P_event`: “Do we agree with the chain about the denominator at this boundary?”
+* `R_event`: the chain-reported aggregate delegator reward for this epoch (`delegates_reward`).
+* `dU`: the epoch’s index increment computed from the event:
+
+$$
+dU = R_{\text{event}} \cdot \dfrac{U + D}{P_{\text{event}}}
+$$
+
+* `split_sum`: the sum of all per-delegator rewards we computed for this epoch:
+
+$$
+\text{split_sum} = \sum_i \left(a_i \cdot \dfrac{dU}{c_i + D}\right)
+$$
+
+* `delta_split = split_sum - R_event`: “Do our per-delegator rewards conserve the event aggregate?”
+* `U_after = U + dU`: the index after applying this epoch’s reward.
+
+**Row-to-row sanity check:** in a clean replay, the next row’s `U` should match the previous row’s `U_after` (up to tiny decimal noise). That’s the “global meter advances once per epoch” story made visible.
+
+
+##### `epoch_splits` (one row per `(reward event, delegator)`)
+
+Each row answers: “Given the state *at this boundary*, what is delegator `i`’s share of this epoch’s aggregate?”
+
+* `height`, `epoch`, `txhash`: identifies the reward event this split belongs to.
+* `delegator`: the delegator address `i`.
+* `delegator_reward_unym`: the per-delegator attribution for this epoch:
+
+$$
+r_{i,e} = a_i \cdot \dfrac{dU}{c_i + D}
+$$
+
+* `R_event`, `U`, `dU`: repeated context columns so each split row is interpretable on its own.
+
+**Important:** the replay does *not* mutate each delegator at each epoch (that’s the whole optimization). So across consecutive reward rows, most delegators’ `(a_i, c_i)` stay unchanged unless there is an interaction event in between.
+
+
+
+```python
+def replay_from_cached_events(
+    reward_rows: List[Dict[str, Any]],
+    delegation_rows: List[Dict[str, Any]],
+    withdraw_rows: List[Dict[str, Any]],
+    *,
+    D: Decimal,
+    delegation_settlement: str = "roll",  # "roll" or "no_roll"
+) -> Dict[str, Any]:
+    rewards = sorted(
+        (parse_reward_row(r) for r in reward_rows),
+        key=lambda x: (x["height"], x["msg_index"], x["txhash"]),
+    )
+
+    # Keep only effective delegation state transitions.
+    delegs = [
+        parse_delegation_row(r)
+        for r in delegation_rows
+        if parse_delegation_row(r).get("is_effective", False)
+    ]
+
+    withds = [parse_withdraw_row(r) for r in withdraw_rows]
+
+    interactions: List[Dict[str, Any]] = []
+    for r in delegs:
+        interactions.append({"kind": "delegation", **r})
+    for r in withds:
+        interactions.append({"kind": "withdraw", **r})
+
+    # Stable ordering within same height is chain-dependent; we keep a deterministic rule:
+    # withdraw first, then delegation, then by delegator string.
+    interactions = sorted(
+        interactions,
+        key=lambda x: (
+            x["height"],
+            0 if x["kind"] == "withdraw" else 1,
+            x.get("delegator") or "",
+            x.get("event_type") or "",
+            x.get("txhash") or "",
+        ),
+    )
+
+    # State: delegator -> {"a": Decimal, "c": Decimal}
+    state: Dict[str, Dict[str, Decimal]] = {}
+    i_int = 0
+
+    epoch_totals: List[Dict[str, Any]] = []
+    epoch_splits: List[Dict[str, Any]] = []
+
+    for ev in rewards:
+        U = ev["U"]
+
+        # Apply all interactions up to this reward boundary.
+        while i_int < len(interactions) and interactions[i_int]["height"] <= ev["height"]:
+            ch = interactions[i_int]
+            who = ch.get("delegator") or ""
+            if not who:
+                i_int += 1
+                continue
+
+            if ch["kind"] == "withdraw":
+                # Withdraw resets bookmark to current U (amount unchanged).
+                if who in state:
+                    state[who]["c"] = U
+
+            elif ch["kind"] == "delegation":
+                # Undelegation full removal (rare variant)
+                if ch.get("full_remove", False):
+                    state.pop(who, None)
+                    i_int += 1
+                    continue
+
+                delta = ch.get("delta", Decimal(0))
+
+                if who not in state:
+                    base_a = Decimal(0)
+                    base_c = U
+                else:
+                    if delegation_settlement == "roll":
+                        base_a = stake_value_unym(state[who]["a"], state[who]["c"], U, D)
+                        base_c = U
+                    elif delegation_settlement == "no_roll":
+                        base_a = state[who]["a"]
+                        base_c = state[who]["c"]
+                    else:
+                        raise ValueError(f"Unsupported delegation_settlement={delegation_settlement!r}")
+
+                new_a = base_a + delta
+                if new_a < 0:
+                    new_a = Decimal(0)
+                state[who] = {"a": new_a, "c": base_c}
+
+            i_int += 1
+
+        # Compute epoch split.
+        P_event = ev["P"]
+        R_event = ev["R"]
+
+        dU = delta_u(R_event, U, D, P_event)
+
+        split_sum = Decimal(0)
+        for who, st in state.items():
+            r_i = delegator_reward_epoch(st["a"], st["c"], dU, D)
+            split_sum += r_i
+            epoch_splits.append({
+                "height": ev["height"],
+                "epoch": ev["epoch"],
+                "txhash": ev["txhash"],
+                "delegator": who,
+                "delegator_reward_unym": r_i,
+                "R_event": R_event,
+                "U": U,
+                "dU": dU,
+            })
+
+        # Diagnostics: compare P_event vs reconstructed P_hat.
+        P_hat = sum((stake_value_unym(st["a"], st["c"], U, D) for st in state.values()), Decimal(0))
+
+        epoch_totals.append({
+            "height": ev["height"],
+            "epoch": ev["epoch"],
+            "txhash": ev["txhash"],
+            "delegators": len(state),
+            "U": U,
+            "P_event": P_event,
+            "P_hat": P_hat,
+            "delta_P": P_hat - P_event,
+            "R_event": R_event,
+            "dU": dU,
+            "split_sum": split_sum,
+            "delta_split": split_sum - R_event,
+            "U_after": U + dU,
+        })
+
+    return {"epoch_totals": epoch_totals, "epoch_splits": epoch_splits, "final_state": state}
+```
+
+
+```python
+out = replay_from_cached_events([], [], [], D=Decimal("100"))
+assert out["epoch_totals"] == []
+assert out["epoch_splits"] == []
+assert out["final_state"] == {}
+```
+
+## Full reconstruction demo (real cache, if present)
+
+Intent:
+- If `data/nym_cache.sqlite` exists locally, load a node's cached events.
+- Run replay.
+- Show:
+  - epoch totals reconcile: `split_sum ≈ delegates_reward`
+  - (optional) compare replay end state vs cached current delegation state
+  - (optional) compare last `U_after` vs cached `total_unit_reward`
+
+If the DB is not present, we skip gracefully.
+
+This section is *not* used for nbdev tests (it depends on local data).
+
+
+
+```python
+REAL_DB_CANDIDATES = [
+    Path("data/nym_cache.sqlite"),
+    Path("../data/nym_cache.sqlite"),
+]
+REAL_DB = next((p for p in REAL_DB_CANDIDATES if p.exists()), None)
+
+if REAL_DB is None:
+    print("Real cache DB not found. Build it with: uv run nym-node-reward-tracker cache")
+else:
+    conn = connect_db(REAL_DB)
+
+    # Start with a small, known-simple node. (2933 is typically single delegator.)
+    node_id = 2933
+
+    reward_rows = rows_from_cache_obj(get_cached_reward_events(conn, node_id))
+    deleg_rows = rows_from_cache_obj(get_cached_delegation_events(conn, node_id))
+    withd_rows = rows_from_cache_obj(get_cached_withdraw_events(conn, node_id))
+
+    D = Decimal("1000000000")  # unit_delegation is cached too, but keep constant here for the demo.
+
+    replay = replay_from_cached_events(
+        reward_rows,
+        deleg_rows,
+        withd_rows,
+        D=D,
+        delegation_settlement="roll",
+    )
+
+    totals_df = pd.DataFrame(replay["epoch_totals"])
+    splits_df = pd.DataFrame(replay["epoch_splits"])
+
+    display(totals_df.head(10))
+    display(splits_df.head(10))
+```
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>height</th>
+      <th>epoch</th>
+      <th>txhash</th>
+      <th>delegators</th>
+      <th>U</th>
+      <th>P_event</th>
+      <th>P_hat</th>
+      <th>delta_P</th>
+      <th>R_event</th>
+      <th>dU</th>
+      <th>split_sum</th>
+      <th>delta_split</th>
+      <th>U_after</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>22083403</td>
+      <td>27979</td>
+      <td>8EF801847C96DF7D926EBC851245DA1FDCDFC9367B6D4CFBA809C4873C7B000A</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>22117043</td>
+      <td>28032</td>
+      <td>DA14A712EA2C488F6E1E1F0AE5209DB80C24B53F1174CC01351B3EA07DCD0B07</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>22117678</td>
+      <td>28033</td>
+      <td>E9186E8FA5908F187391CD8BA5E435A501360122B4717D34052E8667991DA94E</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>22173517</td>
+      <td>28121</td>
+      <td>221D92BE483B648141C3B20723249FE294C17FA5C12C0B4E33CE51961F1ABA1E</td>
+      <td>1</td>
+      <td>0</td>
+      <td>115000000000</td>
+      <td>115000000000</td>
+      <td>0</td>
+      <td>4934506.042432315763771132</td>
+      <td>42908.7481950636153371402782608695652173913043478260869565217</td>
+      <td>4934506.04243231576377113200000000000000000000000000</td>
+      <td>0E-44</td>
+      <td>42908.7481950636153371402782608695652173913043478260869565217</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>22175415</td>
+      <td>28124</td>
+      <td>47B904DAEBBBEC3D42FECE3930003D2C55E96D04EE57EBE0586B6CC52E7D62A2</td>
+      <td>1</td>
+      <td>42908.748195063612977159</td>
+      <td>115004934506.042432315763771132</td>
+      <td>115004934506.042432315492373285</td>
+      <td>-2.71397847E-10</td>
+      <td>5038602.42524570804952542</td>
+      <td>43813.9341325713743435959087201232171941067139808040913506029</td>
+      <td>5038602.42524570804951352950281416997732227210779247050531933</td>
+      <td>-1.189049718583002267772789220752949468067E-14</td>
+      <td>86722.6823276349873207549087201232171941067139808040913506029</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>22176048</td>
+      <td>28125</td>
+      <td>F52F51666EACFE74FC7F291568F22FC2E85FB98AD2901880B108C831A0410A0B</td>
+      <td>1</td>
+      <td>86722.682327634984911091</td>
+      <td>115009973108.467678023813296552</td>
+      <td>115009973108.467678023264775465</td>
+      <td>-5.48521087E-10</td>
+      <td>5051068.033321167506237149</td>
+      <td>43922.3307245318913583744240398020872638072654181825303546364</td>
+      <td>5051068.03332116750621305876457724003533783552309099099078319</td>
+      <td>-2.409023542275996466216447690900900921681E-14</td>
+      <td>130645.013052166876269465424039802087263807265418182530354636</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>22176681</td>
+      <td>28126</td>
+      <td>E7B926D365A31B9700B4E94F70E1D31B77F70E9FAD454D0AA568D53E742DECA4</td>
+      <td>1</td>
+      <td>130645.013052166873853946</td>
+      <td>115015024176.500999191319533701</td>
+      <td>115015024176.500999190493203790</td>
+      <td>-8.26329911E-10</td>
+      <td>5063536.086035759163081806</td>
+      <td>44030.7485742239927221341463322327988218312440941173034159829</td>
+      <td>5063536.08603575916304542682820677186451059307082348989283803</td>
+      <td>-3.637917179322813548940692917651010716197E-14</td>
+      <td>174675.761626390866576080146332232798821831244094117303415983</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>22178579</td>
+      <td>28129</td>
+      <td>F5B60826CFECF04DFE996BE77C75D02C467C96FCC5A1D6A264D57C4443FE1978</td>
+      <td>1</td>
+      <td>174675.761626390864154705</td>
+      <td>115020087712.587034950482615507</td>
+      <td>115020087712.587034949377791075</td>
+      <td>-1.104824432E-9</td>
+      <td>5076005.316656152434963324</td>
+      <td>44139.1766665752385644744910953743361463003177307117330335107</td>
+      <td>5076005.31665615243491456647596804865682453653903184929885373</td>
+      <td>-4.875752403195134317546346096815070114627E-14</td>
+      <td>218814.938292966102719179491095374336146300317730711733033511</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>22180476</td>
+      <td>28132</td>
+      <td>35526397B8E3A3681D26A865DA0CBEC95C7E979FD8A55F865B53C6A1A85FD42E</td>
+      <td>1</td>
+      <td>218814.938292966100291948</td>
+      <td>115025163717.903691102917578831</td>
+      <td>115025163717.903691101533574020</td>
+      <td>-1.384004811E-9</td>
+      <td>5076255.382974034838545682</td>
+      <td>44141.3511562959551172574219349471916041596448035319010723968</td>
+      <td>5076255.38297403483848460352251892703447835915240616862332563</td>
+      <td>-6.107847748107296552164084759383137667437E-14</td>
+      <td>262956.289449262055409205421934947191604159644803531901072397</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>22181742</td>
+      <td>28134</td>
+      <td>3B028EF839E5286E25AC73523A44BA58CAA9312EBC78741405D4736D14B37D54</td>
+      <td>1</td>
+      <td>262956.289449262052981962</td>
+      <td>115030239973.286665137756124513</td>
+      <td>115030239973.286665136092925630</td>
+      <td>-1.663198883E-9</td>
+      <td>5113171.169709195722670743</td>
+      <td>44462.3579974712671530157625763600293112733831974873154556380</td>
+      <td>5113171.16970919572259681269628140337079643906771104127739837</td>
+      <td>-7.393030371859662920356093228895872260163E-14</td>
+      <td>307418.647446733320134977762576360029311273383197487315455638</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>height</th>
+      <th>epoch</th>
+      <th>txhash</th>
+      <th>delegator</th>
+      <th>delegator_reward_unym</th>
+      <th>R_event</th>
+      <th>U</th>
+      <th>dU</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>22173517</td>
+      <td>28121</td>
+      <td>221D92BE483B648141C3B20723249FE294C17FA5C12C0B4E33CE51961F1ABA1E</td>
+      <td>n127c69pasr35p76amfczemusnutr8mtw78s8xl7</td>
+      <td>4934506.04243231576377113200000000000000000000000000</td>
+      <td>4934506.042432315763771132</td>
+      <td>0</td>
+      <td>42908.7481950636153371402782608695652173913043478260869565217</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>22175415</td>
+      <td>28124</td>
+      <td>47B904DAEBBBEC3D42FECE3930003D2C55E96D04EE57EBE0586B6CC52E7D62A2</td>
+      <td>n127c69pasr35p76amfczemusnutr8mtw78s8xl7</td>
+      <td>5038602.42524570804951352950281416997732227210779247050531933</td>
+      <td>5038602.42524570804952542</td>
+      <td>42908.748195063612977159</td>
+      <td>43813.9341325713743435959087201232171941067139808040913506029</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>22176048</td>
+      <td>28125</td>
+      <td>F52F51666EACFE74FC7F291568F22FC2E85FB98AD2901880B108C831A0410A0B</td>
+      <td>n127c69pasr35p76amfczemusnutr8mtw78s8xl7</td>
+      <td>5051068.03332116750621305876457724003533783552309099099078319</td>
+      <td>5051068.033321167506237149</td>
+      <td>86722.682327634984911091</td>
+      <td>43922.3307245318913583744240398020872638072654181825303546364</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>22176681</td>
+      <td>28126</td>
+      <td>E7B926D365A31B9700B4E94F70E1D31B77F70E9FAD454D0AA568D53E742DECA4</td>
+      <td>n127c69pasr35p76amfczemusnutr8mtw78s8xl7</td>
+      <td>5063536.08603575916304542682820677186451059307082348989283803</td>
+      <td>5063536.086035759163081806</td>
+      <td>130645.013052166873853946</td>
+      <td>44030.7485742239927221341463322327988218312440941173034159829</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>22178579</td>
+      <td>28129</td>
+      <td>F5B60826CFECF04DFE996BE77C75D02C467C96FCC5A1D6A264D57C4443FE1978</td>
+      <td>n127c69pasr35p76amfczemusnutr8mtw78s8xl7</td>
+      <td>5076005.31665615243491456647596804865682453653903184929885373</td>
+      <td>5076005.316656152434963324</td>
+      <td>174675.761626390864154705</td>
+      <td>44139.1766665752385644744910953743361463003177307117330335107</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>22180476</td>
+      <td>28132</td>
+      <td>35526397B8E3A3681D26A865DA0CBEC95C7E979FD8A55F865B53C6A1A85FD42E</td>
+      <td>n127c69pasr35p76amfczemusnutr8mtw78s8xl7</td>
+      <td>5076255.38297403483848460352251892703447835915240616862332563</td>
+      <td>5076255.382974034838545682</td>
+      <td>218814.938292966100291948</td>
+      <td>44141.3511562959551172574219349471916041596448035319010723968</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>22181742</td>
+      <td>28134</td>
+      <td>3B028EF839E5286E25AC73523A44BA58CAA9312EBC78741405D4736D14B37D54</td>
+      <td>n127c69pasr35p76amfczemusnutr8mtw78s8xl7</td>
+      <td>5113171.16970919572259681269628140337079643906771104127739837</td>
+      <td>5113171.169709195722670743</td>
+      <td>262956.289449262052981962</td>
+      <td>44462.3579974712671530157625763600293112733831974873154556380</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>22182374</td>
+      <td>28135</td>
+      <td>70A6410538C4B1D460B91E5B2A698C3E156B52471917E2E9EC67D45878487DCA</td>
+      <td>n127c69pasr35p76amfczemusnutr8mtw78s8xl7</td>
+      <td>5101202.38000495834508132522617791393921887644348880958928887</td>
+      <td>5101202.38000495834516755</td>
+      <td>307418.64744673331769019</td>
+      <td>44358.2815652605073485332628363296864279902299433809529503380</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>22183641</td>
+      <td>28137</td>
+      <td>22139B70AE85A3B43AC58237C21F82B7A4BAE159CB6834E5FB2B4E0F0C3C4710</td>
+      <td>n127c69pasr35p76amfczemusnutr8mtw78s8xl7</td>
+      <td>5132012.68584339448361709409178820365972695132815019260797976</td>
+      <td>5132012.685843394483716352</td>
+      <td>351776.929011993822599767</td>
+      <td>44626.1972682034302923225573198974231280604463317408052867805</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>22185534</td>
+      <td>28140</td>
+      <td>F9719A63E81FF41C3BB746ACF6AFECF680BD2597788881391495366AFC307A74</td>
+      <td>n127c69pasr35p76amfczemusnutr8mtw78s8xl7</td>
+      <td>5187274.6886597807738955159303807837077138531948634379989044</td>
+      <td>5187274.688659780774008565</td>
+      <td>396403.126280197250438511</td>
+      <td>45106.7364231285284686566602641807278931639408248994608600383</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+**Walkthrough: node 2933 (single-delegator “happy path”)**
+
+This is the easiest case to build intuition because the node effectively has **one active delegator** for the interesting part of the timeline.
+
+What you’re seeing row-to-row in `epoch_totals`:
+
+* The early rows with all zeros (`delegators=0`, `P_event=0`, `R_event=0`) correspond to reward boundaries where there is **no active delegator stake in replay state**, so there is nothing to split.
+
+* The first “real” row is where `delegators` becomes `1` and `R_event` becomes non-zero. At that point:
+
+  * the replay has applied the relevant delegation interaction(s) *before* this boundary,
+  * we compute `dU` from `(U, P_event, R_event)`,
+  * and because there is only one delegator, the split is trivial:
+
+    $$
+    \text{delegator_reward_unym} = R_{\text{event}}
+    $$
+
+    (you can see this directly in the `epoch_splits` head: one row per epoch, reward equals the aggregate).
+
+* Notice the **meter handoff**: once rewards start, each row’s `U` is essentially the previous row’s `U_after`. That is the global reward index advancing once per reward event.
+
+* Also notice the **compounding fingerprint** in the denominator: with one delegator and no interactions, `P_event` tends to increase by approximately the previous epoch’s `R_event`. Intuitively: “total stake value” for delegators increases by the epoch reward when nothing else changes.
+
+The two diagnostic columns should be “boringly small” here:
+
+* `delta_split ≈ 0` means our per-delegator sum reproduces the event aggregate.
+* `delta_P ≈ 0` means our reconstructed denominator matches the chain’s `prior_delegates` at the same `U`.
+
+
+
+```python
+# Verify reconciliation (non-fatal if it fails; print diagnostics).
+# In a fully consistent cache, delta_split should be extremely close to 0.
+max_abs_delta = totals_df["delta_split"].abs().max() if len(totals_df) else None
+print({"db": str(REAL_DB), "node_id": node_id, "epochs": len(totals_df), "max_abs_delta_split": str(max_abs_delta)})
+```
+
+    {'db': '../data/nym_cache.sqlite', 'node_id': 2933, 'epochs': 65, 'max_abs_delta_split': '0.00000212640523366953871859432875401735445707481843037'}
+
+
+**Quality parameters in `epoch_totals`: what they measure (and why “small is good”)**
+
+These columns are *not* “business outputs”. They are **reconstruction quality diagnostics**: they quantify how closely the replay matches what the chain event claims happened.
+
+* `delta_P = P_hat - P_event`  
+  **Comparison:** replay-reconstructed denominator vs event-reported denominator.  
+  **Why it matters:** if `delta_P` drifts, it usually means our *state* at that boundary is wrong (missed interaction, wrong settlement semantics, wrong ordering, wrong `D`, etc.).
+
+* `delta_split = split_sum - R_event`  
+  **Comparison:** sum of replay per-delegator epoch rewards vs the chain’s aggregate `delegates_reward`.  
+  **Why it matters:** this is the “conservation law” check — the replay is only credible if it can reassemble the aggregate from the parts.
+
+* `max_abs_delta_split` (printed summary)  
+  **Comparison:** the worst absolute `|delta_split|` across all replayed epochs.  
+  **Interpretation:** a single scalar “how bad was the worst epoch?”. In a numerically faithful replay it should be extremely close to zero (often bounded by rounding or truncation artifacts).
+
+**Practical reading guide:**
+
+* If `delta_split` is tiny but `delta_P` is large → you might still be conserving `R_event`, but using the *wrong* denominator (your weights are off; the error can hide in the split distribution).
+* If `delta_P` is tiny but `delta_split` is large → your state matches the denominator, but you’re computing `dU` or per-delegator rewards incorrectly (or applying interactions at the wrong time).
+* If both are large → you are likely missing events or applying the wrong interaction semantics (the replay state machine is off).
+
+
+
+```python
+REAL_DB_CANDIDATES = [
+    Path("data/nym_cache.sqlite"),
+    Path("../data/nym_cache.sqlite"),
+]
+REAL_DB = next((p for p in REAL_DB_CANDIDATES if p.exists()), None)
+
+if REAL_DB is None:
+    print("Real cache DB not found. Build it with: uv run nym-node-reward-tracker cache")
+else:
+    conn = connect_db(REAL_DB)
+
+    # Second example: node 2196.
+    node_id_2 = 2196
+
+    reward_rows_2 = rows_from_cache_obj(get_cached_reward_events(conn, node_id_2))
+    deleg_rows_2 = rows_from_cache_obj(get_cached_delegation_events(conn, node_id_2))
+    withd_rows_2 = rows_from_cache_obj(get_cached_withdraw_events(conn, node_id_2))
+
+    replay_2 = replay_from_cached_events(
+        reward_rows_2,
+        deleg_rows_2,
+        withd_rows_2,
+        D=D,
+        delegation_settlement="no_roll",
+    )
+
+    totals_df_2 = pd.DataFrame(replay_2["epoch_totals"])
+    splits_df_2 = pd.DataFrame(replay_2["epoch_splits"])
+
+    display(totals_df_2.head(10))
+    display(splits_df_2.head(10))
+```
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>height</th>
+      <th>epoch</th>
+      <th>txhash</th>
+      <th>delegators</th>
+      <th>U</th>
+      <th>P_event</th>
+      <th>P_hat</th>
+      <th>delta_P</th>
+      <th>R_event</th>
+      <th>dU</th>
+      <th>split_sum</th>
+      <th>delta_split</th>
+      <th>U_after</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>17017907</td>
+      <td>20074</td>
+      <td>1C9C4B4A5E79904921DFD19888B3D396A467471BE1BB07C5032AA42AB08497D1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>17021671</td>
+      <td>20080</td>
+      <td>82C21443A9DACE986541ADAC101EE9F200E9311AACB875C9EB4753D87A348381</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>17022657</td>
+      <td>20082</td>
+      <td>CEA30F4DE68914540E1F908FAC50C7160AB213E6EA22B998D77801B0EEA9BF88</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>17024885</td>
+      <td>20086</td>
+      <td>35F083A6ED89753F142EDA5D8CDACC871C277179A058B5E4115A43845F154D40</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>17025477</td>
+      <td>20087</td>
+      <td>F64DFDEBD1D508395E08AB752F75E522B4664E0E67394FE7B222C39FE394DAE8</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>17026130</td>
+      <td>20088</td>
+      <td>999C1C31C6F4D5EECBF13F6AD2BE85904F26EE1C8D3447E003FEA86ACAE58A70</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>17026785</td>
+      <td>20089</td>
+      <td>F608EDBCFAE5D3966795480A65873BBB3E9A1034EA1138079D5744294482EFF1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>17027441</td>
+      <td>20090</td>
+      <td>6A2EEA5F39C402D36A7FACD9C140EAF0180288DBCA72F0B6984B94CE7C09F65E</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>17028098</td>
+      <td>20091</td>
+      <td>9A820FE2BB70A7CB8630E4DF373FC0EE0D6ECAEA2B71EC54E8315393F304E15C</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>17029410</td>
+      <td>20093</td>
+      <td>6D206FF65C47985EE9CCA8E75E3D6CAF4EEBD15D69F0C57D551D1074C85E0320</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>height</th>
+      <th>epoch</th>
+      <th>txhash</th>
+      <th>delegator</th>
+      <th>delegator_reward_unym</th>
+      <th>R_event</th>
+      <th>U</th>
+      <th>dU</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>17090990</td>
+      <td>20187</td>
+      <td>67FF8E6B1F6BAE27AB3733E47DA52A9CB032C29993550A5E3624B8FD84A7AD16</td>
+      <td>n1gjut7mz5xp89q9gzvcf9fcyzlnwsuap2wtez79</td>
+      <td>1479.149566359882359519</td>
+      <td>1479.149566359882359519</td>
+      <td>0</td>
+      <td>7395.747831799411797595</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>17091647</td>
+      <td>20188</td>
+      <td>6D834B243A9674972D206A64A3D698E8BC4615043777880F3E0C245352E9F398</td>
+      <td>n1gjut7mz5xp89q9gzvcf9fcyzlnwsuap2wtez79</td>
+      <td>1479.179727107984648463</td>
+      <td>1479.179727107984648463</td>
+      <td>7395.747831799411797595</td>
+      <td>7395.898635539923242315</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>17092302</td>
+      <td>20189</td>
+      <td>66EF474AD83FBC5E9496532521592FF66D159B0505FE2592B295788AF3266F73</td>
+      <td>n1gjut7mz5xp89q9gzvcf9fcyzlnwsuap2wtez79</td>
+      <td>2230.12598950364711840997703920318634809565974191494471864508</td>
+      <td>2230.114991473368236832</td>
+      <td>14791.64646733933503991</td>
+      <td>7433.75329834549039469992346401062116031886580638314906215025</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>17092958</td>
+      <td>20190</td>
+      <td>2DB546BFA50DB75EC38F5241107F6752D184EB3EC7891EBFE6C329A2CC2DCEA1</td>
+      <td>n1gjut7mz5xp89q9gzvcf9fcyzlnwsuap2wtez79</td>
+      <td>2230.171213725303360093912819695749041824926286632627456946</td>
+      <td>2230.160215471997904477</td>
+      <td>22225.399765684825433011</td>
+      <td>7433.90404575101120031304273231916347274975428877542485648668</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>17093614</td>
+      <td>20191</td>
+      <td>1A48A446FD950039AAC748D8BF1011AEC8C896D72E5FE92E3C88BBFC8E709535</td>
+      <td>n1gjut7mz5xp89q9gzvcf9fcyzlnwsuap2wtez79</td>
+      <td>3754.00081511026372118966941805055654824845372959046779581978</td>
+      <td>3753.945170066066235434</td>
+      <td>29659.303811435836631725</td>
+      <td>7508.00163022052744237933883610111309649690745918093559163956</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>17094270</td>
+      <td>20192</td>
+      <td>1987BB99AEB000700939B9CEA576564FF69ECF2C48AB180335292A81C9CCD5E4</td>
+      <td>n1gjut7mz5xp89q9gzvcf9fcyzlnwsuap2wtez79</td>
+      <td>3754.07613679538141233880641372032511505027054420295923308757</td>
+      <td>3754.020490634700818606</td>
+      <td>37167.305441656364072954</td>
+      <td>7508.15227359076282467761282744065023010054108840591846617514</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>18099941</td>
+      <td>21734</td>
+      <td>1FE16AE3FF0D678BE62B01A8F833E0ABAEB5648EC643380D7F5936D0FF42165B</td>
+      <td>n1vtl6a49k7wu4tdt7qtu7v0yn0alxq6c4uqzh8p</td>
+      <td>39469.8758738477641157680000000000</td>
+      <td>39469.875873847764115768</td>
+      <td>44675.457715247126896481</td>
+      <td>8380.56842154151728365698432704400686016795172135459351578590</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>18125599</td>
+      <td>21773</td>
+      <td>B1012FCE096673872DE58BAA92246B6E63F9F503E8A18E46D1D9598E4EA48C00</td>
+      <td>n1vtl6a49k7wu4tdt7qtu7v0yn0alxq6c4uqzh8p</td>
+      <td>40163.2285608685144881376719647828363953699160513639867551228</td>
+      <td>40163.228560868514488138</td>
+      <td>53056.02613678864417197</td>
+      <td>8527.78676224289122384220228215286629316835119223215144500341</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>18273843</td>
+      <td>22000</td>
+      <td>465D212158A0C5A8A98A0E560722BF9FD99A11CADF4C915F976A26F6D48C2775</td>
+      <td>n1vtl6a49k7wu4tdt7qtu7v0yn0alxq6c4uqzh8p</td>
+      <td>27859.4825712824354636860000000000</td>
+      <td>27859.482571282435463686</td>
+      <td>61583.812899031535387501</td>
+      <td>7960.34236126987690033761689819438359324646393962457142857143</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>18279647</td>
+      <td>22009</td>
+      <td>0BF7896BF59762F70898D0AE701F90C355AA6795C6F51834B9CE53C43B501289</td>
+      <td>n1vtl6a49k7wu4tdt7qtu7v0yn0alxq6c4uqzh8p</td>
+      <td>27495.4062220826802589847734091535263721108638815813921433648</td>
+      <td>27495.406222082680258985</td>
+      <td>69544.155260301412279597</td>
+      <td>7856.31414115286967608178310831046594886308466731761007252845</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+**Walkthrough: node 2196 (multi-delegator + interactions = harder replay)**
+
+Compared to node 2933, node 2196 has:
+
+* multiple delegators over time,
+* delegation / undelegation / withdraw interactions interleaved with reward boundaries,
+* more opportunities for “who had which bookmark when?” to matter.
+
+How to interpret the `head(10)` outputs here:
+
+* Seeing many early rows with `R_event=0` and `delegators=0` is not an error by itself — it just means that for those early reward boundaries the chain event indicates **no delegator reward / no delegator stake**, so the replay state is empty and there is nothing to split.
+
+* The `epoch_splits` head may show repeated delegator addresses because you’re only looking at the first few reward events where only one delegator was present. Later in the table (not shown in `head(10)`), each reward event will typically expand into **one row per active delegator**.
+
+Why the quality numbers are usually “worse” than in the single-delegator case:
+
+* more delegators ⇒ more floating- or fixed-point edge cases;
+* more interactions ⇒ more chances to mis-apply the “settlement” semantics (do we roll pending into amount on stake changes?) or to mis-order events that share a block height.
+
+So here, a larger `max_abs_delta_split` is typically telling you: “this replay is *still close*, but the simplified replay assumptions are being stress-tested.”
+
+
+
+```python
+max_abs_delta_2 = totals_df_2["delta_split"].abs().max() if len(totals_df_2) else None
+print({"db": str(REAL_DB), "node_id": node_id_2, "epochs": len(totals_df_2), "max_abs_delta_split": str(max_abs_delta_2)})
+```
+
+    {'db': '../data/nym_cache.sqlite', 'node_id': 2196, 'epochs': 1646, 'max_abs_delta_split': '6.9541964412541578143131365640802416509980243639296149'}
+
+
+## Optional reconciliation: replay final state vs cached "current delegation state"
+
+Intent:
+- Compare replay's final `(a_i, c_i)` per delegator with cached "current delegation state".
+- This is a strong sanity check, but requires the cache to store these snapshot tables.
+
+If your cache module does not have `get_cached_current_delegation_state`, skip this section.
+
+
+**Optional reconciliation: replay state vs cached current-state snapshot**
+
+In this section we compare **two notions of “current delegation state”**:
+
+1. **Replay final state** (from event sourcing): the `(a_i, c_i)` values the replay engine ends up with after processing all reward events and applying all cached interaction events up to those reward boundaries.
+2. **Cached current delegation state** (from chain queries at cache time): the `(amount_unym, cumulative_reward_ratio)` rows stored in the cache as a snapshot of what the contract reported as “current” for each delegator.
+
+The reconciliation table columns:
+
+* `amount_replay`: final replay `a_i` (delegation amount / principal-like baseline, in `unym`).
+
+* `amount_cache`: cached snapshot `amount_unym` from the contract (in `unym`).
+
+* `amount_delta = amount_replay - amount_cache`: amount mismatch (replay minus cache).
+
+* `crr_replay`: final replay `c_i` (the delegator bookmark / `cumulative_reward_ratio`).
+
+* `crr_cache`: cached snapshot `cumulative_reward_ratio`.
+
+* `crr_delta = crr_replay - crr_cache`: bookmark mismatch.
+
+How to read it:
+
+* **`crr_delta` is the “did we sync at the right times?” check.**  
+  If it’s not ~0, you likely missed or mis-ordered a withdraw or stake-change event that should have reset the bookmark.
+
+* **`amount_delta` is the “did we reproduce on-chain settlement semantics?” check.**  
+  If it’s not ~0 while `crr_delta` is ~0, the replay usually has the right *sync points* but the wrong *amount evolution* (for example, missing a roll-into-baseline rebase, or not matching on-chain rounding or truncation).
+
+
+
+```python
+if REAL_DB is not None:
+    try:
+        cur_deleg_rows = rows_from_cache_obj(get_cached_current_delegation_state(conn, node_id))
+        cur_reward_rows = rows_from_cache_obj(get_cached_current_rewarding_state(conn, node_id))
+    except Exception as exc:
+        print("Skipping optional reconciliation (missing cache snapshot readers).", exc)
+        cur_deleg_rows = []
+        cur_reward_rows = []
+
+    if cur_deleg_rows:
+        final = replay["final_state"]
+        cur_map = {r["delegator"]: r for r in cur_deleg_rows}
+
+        rec = []
+        for who in sorted(set(final.keys()) | set(cur_map.keys())):
+            if who not in final:
+                rec.append({"delegator": who, "status": "missing_in_replay"})
+                continue
+            if who not in cur_map:
+                rec.append({"delegator": who, "status": "missing_in_cached_current"})
+                continue
+
+            a_replay = final[who]["a"]
+            c_replay = final[who]["c"]
+
+            a_cache = d(cur_map[who].get("amount_unym"))
+            c_cache = d(cur_map[who].get("cumulative_reward_ratio"))
+
+            rec.append({
+                "delegator": who,
+                "amount_replay": a_replay,
+                "amount_cache": a_cache,
+                "amount_delta": a_replay - a_cache,
+                "crr_replay": c_replay,
+                "crr_cache": c_cache,
+                "crr_delta": c_replay - c_cache,
+            })
+
+        rec_df = pd.DataFrame(rec)
+        display(rec_df)
+```
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>delegator</th>
+      <th>amount_replay</th>
+      <th>amount_cache</th>
+      <th>amount_delta</th>
+      <th>crr_replay</th>
+      <th>crr_cache</th>
+      <th>crr_delta</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>n127c69pasr35p76amfczemusnutr8mtw78s8xl7</td>
+      <td>200977025706.044950249790075675</td>
+      <td>200977025706</td>
+      <td>0.044950249790075675</td>
+      <td>669788.748216958693826745</td>
+      <td>669788.748216958693826745</td>
+      <td>0E-18</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+**Interpreting `amount_delta` and `crr_delta` as reconstruction-quality signals**
+
+Treat these as “quality parameters” in the same spirit as `delta_P` and `delta_split`:
+
+* `crr_delta` should be **exactly zero or extremely close to zero**.  
+  The bookmark is set to specific index values at interaction time; if it drifts, it’s usually a structural replay problem (missing interaction, wrong time ordering, or using the wrong unit reward as “current” when applying an interaction).
+
+* `amount_delta` should also be **small**, but it is the place where you most often see:
+
+  * **tiny non-zero noise** if the replay keeps high-precision `Decimal` values while the chain ultimately stores integer micro-coins;
+  * **visible step errors** if the replay interprets a stake-change event too naively (for example, applying “delta only” when the contract actually performs a rebase or roll at execution time).
+
+A useful mental model:
+
+* **`crr_delta ≈ 0` and `amount_delta ≈ 0`** → the replay is faithfully reproducing both sync points *and* baseline evolution.
+* **`crr_delta ≈ 0` and `amount_delta ≠ 0`** → you likely have the right *bookmarks*, but are missing a rebase or roll (or matching the wrong rounding regime).
+* **`crr_delta ≠ 0`** → fix event ordering or interaction semantics first; amount drift is often downstream of bookmark drift.
+
+
+```python
+if cur_reward_rows:
+    # Compare last U_after vs cached total_unit_reward (should be very close if we replayed to the latest reward).
+    total_unit_reward_cache = d(cur_reward_rows[0].get("total_unit_reward"))
+    last_u_after = replay["epoch_totals"][-1]["U_after"] if replay["epoch_totals"] else None
+    print({
+        "total_unit_reward_cache": str(total_unit_reward_cache),
+        "last_u_after_replay": str(last_u_after),
+        "delta": str((last_u_after - total_unit_reward_cache) if last_u_after is not None else None),
+    })
+```
+
+    {'total_unit_reward_cache': '2869799.200580445804757262', 'last_u_after_replay': '2869799.20058044580640495364722455879674816720517383236196364', 'delta': '1.64769164722455879674816720517383236196364E-12'}
+
+
+
+```python
+if REAL_DB is not None:
+    if "node_id_2" in locals() and "replay_2" in locals():
+        try:
+            cur_deleg_rows_2 = rows_from_cache_obj(get_cached_current_delegation_state(conn, node_id_2))
+            cur_reward_rows_2 = rows_from_cache_obj(get_cached_current_rewarding_state(conn, node_id_2))
+        except Exception as exc:
+            print("Skipping optional reconciliation (missing cache snapshot readers).", exc)
+            cur_deleg_rows_2 = []
+            cur_reward_rows_2 = []
+
+        if cur_deleg_rows_2:
+            final_2 = replay_2["final_state"]
+            cur_map_2 = {r["delegator"]: r for r in cur_deleg_rows_2}
+
+            rec_2 = []
+            for who in sorted(set(final_2.keys()) | set(cur_map_2.keys())):
+                if who not in final_2:
+                    rec_2.append({"delegator": who, "status": "missing_in_replay"})
+                    continue
+                if who not in cur_map_2:
+                    rec_2.append({"delegator": who, "status": "missing_in_cached_current"})
+                    continue
+
+                a_replay_2 = final_2[who]["a"]
+                c_replay_2 = final_2[who]["c"]
+
+                a_cache_2 = d(cur_map_2[who].get("amount_unym"))
+                c_cache_2 = d(cur_map_2[who].get("cumulative_reward_ratio"))
+
+                rec_2.append({
+                    "delegator": who,
+                    "amount_replay": a_replay_2,
+                    "amount_cache": a_cache_2,
+                    "amount_delta": a_replay_2 - a_cache_2,
+                    "crr_replay": c_replay_2,
+                    "crr_cache": c_cache_2,
+                    "crr_delta": c_replay_2 - c_cache_2,
+                })
+
+            rec_df_2 = pd.DataFrame(rec_2)
+            display(rec_df_2)
+
+```
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>delegator</th>
+      <th>amount_replay</th>
+      <th>amount_cache</th>
+      <th>amount_delta</th>
+      <th>crr_replay</th>
+      <th>crr_cache</th>
+      <th>crr_delta</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>n1gx3s4zenfs7qz0m742xvte2m0nh86rkz9ygq0q</td>
+      <td>5000000000</td>
+      <td>5000146592</td>
+      <td>-146592</td>
+      <td>44429242.232656255693475965</td>
+      <td>44429242.232656255693475965</td>
+      <td>0E-18</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>n1hhl9jd3rwk63sdkqjq58le7677lemtkgnq7mmh</td>
+      <td>220000000000</td>
+      <td>220000000000</td>
+      <td>0</td>
+      <td>1067441.152658741047882242</td>
+      <td>1067441.152658741047882242</td>
+      <td>0E-18</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>n1vtl6a49k7wu4tdt7qtu7v0yn0alxq6c4uqzh8p</td>
+      <td>3500000000</td>
+      <td>3500000000</td>
+      <td>0</td>
+      <td>61583.812899031535387501</td>
+      <td>61583.812899031535387501</td>
+      <td>0E-18</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>n1x73qf9v27h5xxw9m7au5lygvpad4wktqylwkng</td>
+      <td>13390000000</td>
+      <td>13390000000</td>
+      <td>0</td>
+      <td>7551691.902895046680269443</td>
+      <td>7551691.902895046680269443</td>
+      <td>0E-18</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+**Case study: why `n1gx3s4...` is short by `146592 unym`**
+
+In the node 2196 reconciliation output, you have:
+
+* `amount_replay = 5_000_000_000`
+* `amount_cache  = 5_000_146_592`
+* `amount_delta  = -146_592` (≈ **-0.146592 NYM**, ≈ **-0.00293%**)
+* `crr_delta = 0`
+
+The key diagnostic is: **the bookmark matches exactly (`crr_delta = 0`), but the baseline amount is slightly low**.
+
+That pattern strongly suggests:
+
+* we are syncing at the right moments (withdraw / stake-change bookmarks are correct), **but**
+* at least one stake-change transition did not apply the contract’s *“roll pending into baseline”* behavior the same way the chain did.
+
+Concretely, the contract’s stake-change semantics are **“rebase, then apply delta”**:
+
+1. compute current stake value at the interaction index \(U\),
+2. fold pending rewards into `amount`,
+3. then add or subtract the delegation delta,
+4. reset the bookmark to \(U\).
+
+If the replay instead treats the cached delegation event as *“just add the delta to `amount`”*, it will miss exactly the **pending-that-should-have-been-rolled** at that interaction. A one-off missed roll of approximately `146_592 unym` is entirely consistent with the size and sign you see.
+
+Why this is a good hypothesis (and how to confirm quickly):
+
+* Pending rewards scale linearly with `amount`:
+
+$$
+\mathrm{pending}(U) = a \cdot \dfrac{U - c}{c + D}
+$$
+
+So if `amount` is low by about **0.00293%**, your computed pending will also be low by about **0.00293%** at the same \((U, c, D)\). That *same relative error* fingerprint is exactly what you expect when the only thing wrong is the baseline `a`.
+
+Where this typically comes from (hint aligned with the manual notebook):
+
+* **Top-ups / stake changes are not “pure deltas” on-chain** — they are executed as a *rebase + roll* operation at execution time, and event attributes or cached deltas can hide that internal step.
+
+Practical next step (to localize the source of the `146_592`):
+
+* Find the **last stake-change interaction** (delegation or undelegation) involving `n1gx3s4...` in your cached events.
+* At that interaction boundary, compute the pending roll term:
+
+$$
+\Delta_{\mathrm{roll}} = a \cdot \dfrac{U - c}{c + D}
+$$
+
+If you see a roll term on the order of `146_592 unym` around that point, you’ve found the missing rebase/roll that the cache-only replay did not encode.
+
+If this hypothesis is correct, the “fix” is **not** in the epoch reward math — it’s in **how delegation events are interpreted or cached**: either store enough information to replay the rebase+roll step explicitly, or adjust the replay’s settlement handling for the relevant interaction(s) so that the rolled amount is included.
+
+
+```python
+if cur_reward_rows_2:
+    total_unit_reward_cache_2 = d(cur_reward_rows_2[0].get("total_unit_reward"))
+    last_u_after_2 = replay_2["epoch_totals"][-1]["U_after"] if replay_2["epoch_totals"] else None
+    print({
+        "total_unit_reward_cache": str(total_unit_reward_cache_2),
+        "last_u_after_replay": str(last_u_after_2),
+        "delta": str((last_u_after_2 - total_unit_reward_cache_2) if last_u_after_2 is not None else None),
+    })
+
+```
+
+    {'total_unit_reward_cache': '66087553.132157347816839083', 'last_u_after_replay': '66087553.1321573478172634968533087125483582776001925580749286', 'delta': '4.244138533087125483582776001925580749286E-13'}
+
+
+## Wrap-up
+
+What we did:
+
+1. Started with the naive pro-rata-by-principal model.
+2. Found concrete failure modes:
+
+   * timing / activation,
+   * compounding (value vs principal),
+   * withdrawals / baseline resets,
+   * on-chain cost of per-epoch, per-delegator updates.
+3. Showed the “simple but correct” approach (update all delegators each epoch), and why it is expensive.
+4. Introduced the optimization:
+
+   * global index (meter) + per-delegator bookmark (“last synchronized index”).
+5. Derived Nym’s actual accounting formulas:
+
+   * stake value $V_i(U) = a_i \cdot \frac{U + D}{c_i + D}$,
+   * epoch index jump $\Delta U = R \cdot \frac{U + D}{P}$,
+   * per-delegator reward $r_i = a_i \cdot \frac{\Delta U}{c_i + D}$.
+6. Implemented a cache-only replay and validated it.
+
+
+
+```python
+
+```
