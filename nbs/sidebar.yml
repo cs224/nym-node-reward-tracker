@@ -9,9 +9,8 @@ website:
       - 03_epoch_by_epoch.ipynb
       - 03_reward_transactions.ipynb
       - 10_cli.ipynb
+      - 90_node_interest_rates_estimation.ipynb
       - 99_tests.ipynb
       - nbdev.yml
-      - nym_cache.log
-      - nym_tax_rewards_export.log
       - sidebar.yml
       - styles.css

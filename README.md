@@ -6,8 +6,6 @@ Dual-use project:
 - CLI tool for day-to-day runs (`uv run nym-node-reward-tracker ...`)
 - Notebook-first [nbdev2](https://nbdev.fast.ai/) repo where notebooks in `nbs/` are the source of truth and exported code is generated in `nym_node_reward_tracker/`
 
-Find the [nbdev2](https://nbdev.fast.ai/) generated documentation here: [Nym node reward tracker](https://cs224.github.io/nym-node-reward-tracker/)
-
 ## What this project does
 
 - Snapshot operator rewards and uptime for bonded nodes, with rolling 7-day and 30-day comparisons from stored history.
@@ -31,6 +29,8 @@ Find the [nbdev2](https://nbdev.fast.ai/) generated documentation here: [Nym nod
   - `nbs/02_cache.ipynb`
   - `nbs/03_reward_transactions.ipynb`
   - `nbs/03_epoch_by_epoch.ipynb`
+- Human walkthrough notebooks:
+  - `nbs/90_node_interest_rates_estimation.ipynb` (node-level interest/yield walkthrough from historical reward events)
 ## Quickstart (CLI)
 
 ```bash

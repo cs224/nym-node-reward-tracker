@@ -711,6 +711,8 @@ assert url.endswith('/cosmos/tx/v1beta1/txs/H')
 
 ```
 
+Intent: convert one transaction into zero or more normalized reward rows, combining event and message-derived fields.
+
 
 ```python
 #| export
@@ -1286,7 +1288,7 @@ def run_reward_transactions(
     explorer_base: Optional[str] = None,
     tx_api_base: Optional[str] = None,
     tx_rpc_base: Optional[str] = None,
-    log_file: str = "nym_tax_rewards_export.log",
+    log_file: Optional[str] = None,
     log_level: str = "INFO",
 ) -> int:
     logger = setup_logging("nym_tax_export", log_file=log_file, level=log_level)
@@ -1377,7 +1379,6 @@ def run_reward_transactions(
 
     logger.info("Wrote %d rows to: %s", len(rows), out_csv)
     return 0
-
 ```
 
 

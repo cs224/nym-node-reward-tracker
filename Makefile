@@ -69,7 +69,7 @@ help:
 ## Ensure environment is ready
 sync:
 	@echo "==> uv sync"
-	$(UV) sync
+	$(UV) sync --group dev
 
 ## Step 1: export library code from notebooks
 export:

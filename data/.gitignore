@@ -2,3 +2,4 @@
 /data.yaml
 *.sqlite*
 /epoch_by_epoch_rewards.xlsx
+notebook_interest_rates/
