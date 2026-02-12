@@ -771,7 +771,7 @@ with TemporaryDirectory() as td:
     assert rc == 2
 ```
 
-    2026-02-10T21:12:20 | ERROR | nym_tax_export | No wallets found in /tmp/tmp26b1mkd7/wallets.csv
+    2026-02-12T13:37:07 | ERROR | nym_tax_export | No wallets found in /tmp/tmpwwvd5zuy/wallets.csv
 
 ## Python live end-to-end demo
 
@@ -802,20 +802,20 @@ with TemporaryDirectory() as td:
     print("out exists:", out.exists(), out)
 ```
 
-    Wallets:   0%|                                                                                                                                                                                                                  | 0/1 [00:00<?, ?wallet/s]2026-02-10T21:12:20 | INFO | nym_tax_export | Scanning wallet=n127c69pasr35p76amfczemusnutr8mtw78s8xl7 tag=operator query="message.sender='n127c69pasr35p76amfczemusnutr8mtw78s8xl7'"
+    Wallets:   0%|                                                                                                                                                                                                                  | 0/1 [00:00<?, ?wallet/s]2026-02-12T13:37:07 | INFO | nym_tax_export | Scanning wallet=n127c69pasr35p76amfczemusnutr8mtw78s8xl7 tag=operator query="message.sender='n127c69pasr35p76amfczemusnutr8mtw78s8xl7'"
 
-    Txs n127c69p: 0tx [00:00, ?tx/s]Txs n127c69p: 14tx [00:00, 999.90tx/s]
-    Wallets: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 1/1 [00:00<00:00, 10.30wallet/s]
-    2026-02-10T21:12:20 | INFO | nym_tax_export | Collected 1 reward rows; fetching prices (eur)
-    2026-02-10T21:12:20 | INFO | nym_tax_export | CoinGecko price window unix=1764862311..1764869511 (eur)
-    2026-02-10T21:12:20 | INFO | nym_tax_export | Loaded 2 price points
-    2026-02-10T21:12:20 | INFO | nym_tax_export | 
-    2026-02-10T21:12:20 | INFO | nym_tax_export | Reward transactions (table)
-    2026-02-10T21:12:20 | INFO | nym_tax_export | 
+    Txs n127c69p: 0tx [00:00, ?tx/s]Txs n127c69p: 14tx [00:00, 1086.08tx/s]
+    Wallets: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 1/1 [00:00<00:00,  7.45wallet/s]Wallets: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 1/1 [00:00<00:00,  7.42wallet/s]
+    2026-02-12T13:37:07 | INFO | nym_tax_export | Collected 1 reward rows; fetching prices (eur)
+    2026-02-12T13:37:07 | INFO | nym_tax_export | CoinGecko price window unix=1764862311..1764869511 (eur)
+    2026-02-12T13:37:07 | INFO | nym_tax_export | Loaded 2 price points
+    2026-02-12T13:37:07 | INFO | nym_tax_export | 
+    2026-02-12T13:37:07 | INFO | nym_tax_export | Reward transactions (table)
+    2026-02-12T13:37:07 | INFO | nym_tax_export | 
     |             timestamp_utc |                                   wallet |                   action |   node_id |   amount_nym |     net_nym |   price_eur_per_nym |   value_eur |
     |---------------------------|------------------------------------------|--------------------------|-----------|--------------|-------------|---------------------|-------------|
     | 2025-12-04T16:31:51+00:00 | n127c69pasr35p76amfczemusnutr8mtw78s8xl7 | withdraw_operator_reward |      2196 |  3009.552561 | 3009.547398 |          0.04261800 |      128.26 |
-    2026-02-10T21:12:20 | INFO | nym_tax_export | Wrote 1 rows to: /tmp/tmpaa_z2aup/rewards.csv
+    2026-02-12T13:37:07 | INFO | nym_tax_export | Wrote 1 rows to: /tmp/tmpomn4uzy6/rewards.csv
 
     rc= 0
-    out exists: True /tmp/tmpaa_z2aup/rewards.csv
+    out exists: True /tmp/tmpomn4uzy6/rewards.csv

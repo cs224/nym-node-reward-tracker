@@ -2,38 +2,42 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://cs224.github.io/nym-node-reward-tracker/cli.html</loc>
-    <lastmod>2026-02-10T20:12:28.819Z</lastmod>
-  </url>
-  <url>
-    <loc>https://cs224.github.io/nym-node-reward-tracker/epoch_by_epoch.html</loc>
-    <lastmod>2026-02-10T20:12:28.881Z</lastmod>
-  </url>
-  <url>
-    <loc>https://cs224.github.io/nym-node-reward-tracker/02_cache.html</loc>
-    <lastmod>2026-02-10T20:12:28.843Z</lastmod>
-  </url>
-  <url>
-    <loc>https://cs224.github.io/nym-node-reward-tracker/cosmos_tx_parsing.html</loc>
-    <lastmod>2026-02-10T20:12:28.639Z</lastmod>
-  </url>
-  <url>
-    <loc>https://cs224.github.io/nym-node-reward-tracker/index.html</loc>
-    <lastmod>2026-02-10T20:12:28.766Z</lastmod>
-  </url>
-  <url>
-    <loc>https://cs224.github.io/nym-node-reward-tracker/common.html</loc>
-    <lastmod>2026-02-10T20:12:28.707Z</lastmod>
-  </url>
-  <url>
-    <loc>https://cs224.github.io/nym-node-reward-tracker/reward_transactions.html</loc>
-    <lastmod>2026-02-10T20:12:28.889Z</lastmod>
-  </url>
-  <url>
-    <loc>https://cs224.github.io/nym-node-reward-tracker/tests.html</loc>
-    <lastmod>2026-02-10T20:12:28.736Z</lastmod>
+    <lastmod>2026-02-12T12:37:24.545Z</lastmod>
   </url>
   <url>
     <loc>https://cs224.github.io/nym-node-reward-tracker/snapshot.html</loc>
-    <lastmod>2026-02-10T20:12:28.736Z</lastmod>
+    <lastmod>2026-02-12T12:37:24.408Z</lastmod>
+  </url>
+  <url>
+    <loc>https://cs224.github.io/nym-node-reward-tracker/tests.html</loc>
+    <lastmod>2026-02-12T12:37:24.397Z</lastmod>
+  </url>
+  <url>
+    <loc>https://cs224.github.io/nym-node-reward-tracker/reward_transactions.html</loc>
+    <lastmod>2026-02-12T12:37:24.553Z</lastmod>
+  </url>
+  <url>
+    <loc>https://cs224.github.io/nym-node-reward-tracker/common.html</loc>
+    <lastmod>2026-02-12T12:37:24.274Z</lastmod>
+  </url>
+  <url>
+    <loc>https://cs224.github.io/nym-node-reward-tracker/index.html</loc>
+    <lastmod>2026-02-12T12:37:24.428Z</lastmod>
+  </url>
+  <url>
+    <loc>https://cs224.github.io/nym-node-reward-tracker/cosmos_tx_parsing.html</loc>
+    <lastmod>2026-02-12T12:37:24.293Z</lastmod>
+  </url>
+  <url>
+    <loc>https://cs224.github.io/nym-node-reward-tracker/02_cache.html</loc>
+    <lastmod>2026-02-12T12:37:24.534Z</lastmod>
+  </url>
+  <url>
+    <loc>https://cs224.github.io/nym-node-reward-tracker/epoch_by_epoch.html</loc>
+    <lastmod>2026-02-12T12:37:24.582Z</lastmod>
+  </url>
+  <url>
+    <loc>https://cs224.github.io/nym-node-reward-tracker/node_interest_rates_estimation.html</loc>
+    <lastmod>2026-02-12T12:37:24.356Z</lastmod>
   </url>
 </urlset>

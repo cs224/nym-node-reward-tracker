@@ -197,6 +197,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="./node_interest_rates_estimation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Node Interest Rates Walkthrough on Nyx (last 120 hours)</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="./tests.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Notebook tests</span></a>
   </div>
@@ -315,7 +321,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>)<span class="op">-&gt;</span><span class="va">None</span>:</span>
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p><em>Normalized wallet balance components in unym.</em></p>
-<div id="40d345d6" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-10T20:12:11.767422Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-10T20:12:11.767280Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-10T20:12:11.770218Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-10T20:12:11.769519Z&quot;}}" data-execution_count="6">
+<div id="40d345d6" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-12T12:36:58.245685Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-12T12:36:58.245537Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-12T12:36:58.248590Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-12T12:36:58.247822Z&quot;}}" data-execution_count="6">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>b <span class="op">=</span> BalanceBreakdown(</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    delegated_unym<span class="op">=</span><span class="st">"1"</span>,</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    self_bonded_unym<span class="op">=</span><span class="dv">2</span>,</span>
@@ -335,13 +341,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> w.to_latest_csv_row()[<span class="st">"node_id"</span>] <span class="op">==</span> <span class="st">"2196"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div id="a0554098" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-10T20:12:11.771549Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-10T20:12:11.771411Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-10T20:12:11.774390Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-10T20:12:11.773864Z&quot;}}" data-execution_count="7">
+<div id="a0554098" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-12T12:36:58.250039Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-12T12:36:58.249898Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-12T12:36:58.253172Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-12T12:36:58.252447Z&quot;}}" data-execution_count="7">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>b</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="7">
 <pre><code>BalanceBreakdown(delegated_unym=1, self_bonded_unym=2, spendable_unym=3, locked_unym=0, rewards_operator_commissions_unym=4, rewards_staking_rewards_unym=0, rewards_unlocked_unym=0)</code></pre>
 </div>
 </div>
-<div id="d5ddcb86" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-10T20:12:11.775761Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-10T20:12:11.775624Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-10T20:12:11.778587Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-10T20:12:11.778000Z&quot;}}" data-execution_count="8">
+<div id="d5ddcb86" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-12T12:36:58.254938Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-12T12:36:58.254757Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-12T12:36:58.258031Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-12T12:36:58.257429Z&quot;}}" data-execution_count="8">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>w</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="8">
 <pre><code>WalletSnapshot(timestamp_utc='2026-01-01T00:00:00+00:00', wallet_address='n1wallet', tag='test', node_id=2196, identity_key='identity', balances=BalanceBreakdown(delegated_unym=1, self_bonded_unym=2, spendable_unym=3, locked_unym=0, rewards_operator_commissions_unym=4, rewards_staking_rewards_unym=0, rewards_unlocked_unym=0), source='spectre')</code></pre>
@@ -353,7 +359,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="wallet-node-metadata-node_id-identity_key">Wallet → node metadata (node_id, identity_key)</h2>
 <p>Intent: enrich snapshots with node identity when the wallet owns a node.</p>
 <p>This uses <code>get_owned_nym_node</code>.</p>
-<div id="86e41f96" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-10T20:12:11.779976Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-10T20:12:11.779838Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-10T20:12:11.845942Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-10T20:12:11.845107Z&quot;}}" data-execution_count="9">
+<div id="86e41f96" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-12T12:36:58.259797Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-12T12:36:58.259646Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-12T12:36:58.327789Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-12T12:36:58.327029Z&quot;}}" data-execution_count="9">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="va">MIXNET_CONTRACT</span><span class="op">=</span><span class="st">'n17srjznxl9dvzdkpwpw24gg668wc73val88a6m5ajg6ankwvz9wtst0cznr'</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="va">WALLET</span><span class="op">=</span><span class="st">'n127c69pasr35p76amfczemusnutr8mtw78s8xl7'</span></span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="va">Q</span><span class="op">=</span><span class="va">$(</span><span class="bu">printf</span> <span class="st">'%s'</span> <span class="st">'{"get_owned_nym_node":{"address":"'"</span><span class="va">${WALLET}</span><span class="st">"'"}}'</span> <span class="kw">|</span> <span class="fu">base64</span> <span class="at">-w</span> 0<span class="va">)</span></span>
@@ -386,11 +392,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
             "amount": "80000000"
           }
         },
-        "operator": "17390256719.521210907713593052",
-        "delegates": "257303535287.147314054693885213",
-        "total_unit_reward": "66135334.77153225699149127",
+        "operator": "17460861134.830936160640492906",
+        "delegates": "257508697946.918840668874723276",
+        "total_unit_reward": "66985424.766269536600989211",
         "unit_delegation": "1000000000",
-        "last_rewarded_epoch": 28393,
+        "last_rewarded_epoch": 28429,
         "unique_delegations": 4
       },
       "pending_changes": {
@@ -413,7 +419,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p><em>Returns (node_id, identity_key, self_bonded_unym_from_original_pledge).</em></p>
 <p>If wallet has no owned node: (None, ““, 0).</p>
-<div id="3f7246fa" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-10T20:12:11.852651Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-10T20:12:11.852467Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-10T20:12:11.855231Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-10T20:12:11.854628Z&quot;}}" data-execution_count="11">
+<div id="3f7246fa" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-12T12:36:58.334711Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-12T12:36:58.334559Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-12T12:36:58.337191Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-12T12:36:58.336714Z&quot;}}" data-execution_count="11">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>fake <span class="op">=</span> _FakeSession([_FakeResp({<span class="st">"data"</span>: {<span class="st">"ok"</span>: <span class="va">True</span>}})])</span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="co"># This fake returns no bond information, so node metadata should be empty.</span></span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>nid, ik, pledge <span class="op">=</span> get_owned_node_details(fake, <span class="st">"n1"</span>, nyx_wasm_rest<span class="op">=</span><span class="st">"x"</span>, mixnet_contract<span class="op">=</span><span class="st">"c"</span>)</span>
@@ -425,7 +431,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="source-1-spectre-balance-parser">Source 1: Spectre balance parser</h2>
 <p>Intent: parse Spectre response into our normalized <code>BalanceBreakdown</code> (unym ints).</p>
 <p>We keep this pure: “JSON in → dataclass out”.</p>
-<div id="f4e39ff1" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-10T20:12:11.856851Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-10T20:12:11.856694Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-10T20:12:12.520896Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-10T20:12:12.520142Z&quot;}}" data-execution_count="12">
+<div id="f4e39ff1" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-12T12:36:58.339093Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-12T12:36:58.338948Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-12T12:36:58.994108Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-12T12:36:58.993474Z&quot;}}" data-execution_count="12">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="va">WALLET</span><span class="op">=</span><span class="st">"n127c69pasr35p76amfczemusnutr8mtw78s8xl7"</span></span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="va">URL</span><span class="op">=</span><span class="st">"https://api.nym.spectredao.net/api/v1/balances/</span><span class="va">${WALLET}</span><span class="st">"</span></span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> <span class="st">"</span><span class="va">$URL</span><span class="st">"</span> <span class="kw">|</span> <span class="ex">jq</span> <span class="st">'.'</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -441,11 +447,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   },
   "rewards": {
     "operator_commissions": {
-      "amount": 2390256719,
+      "amount": 2460861134,
       "denom": "unym"
     },
     "staking_rewards": {
-      "amount": 441855607,
+      "amount": 524574066,
       "denom": "unym"
     },
     "unlocked": {
@@ -462,7 +468,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "denom": "unym"
   },
   "total": {
-    "amount": 218869777259,
+    "amount": 219023100133,
     "denom": "unym"
   }
 }</code></pre>
@@ -477,7 +483,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>    js:Dict[<span class="bu">str</span>, Any]</span>
 <span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>)<span class="op">-&gt;</span>BalanceBreakdown:</span>
 <span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div id="6a16dd39" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-10T20:12:12.528270Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-10T20:12:12.528094Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-10T20:12:12.531646Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-10T20:12:12.530802Z&quot;}}" data-execution_count="14">
+<div id="6a16dd39" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-12T12:36:59.001300Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-12T12:36:59.001127Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-12T12:36:59.004377Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-12T12:36:59.003743Z&quot;}}" data-execution_count="14">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>example <span class="op">=</span> {</span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="st">"delegated"</span>: {<span class="st">"amount"</span>: <span class="dv">200977025706</span>, <span class="st">"denom"</span>: <span class="st">"unym"</span>},</span>
 <span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"locked"</span>: {<span class="st">"amount"</span>: <span class="dv">0</span>, <span class="st">"denom"</span>: <span class="st">"unym"</span>},</span>
@@ -509,12 +515,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>    logger:NoneType<span class="op">=</span><span class="va">None</span></span>
 <span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>)<span class="op">-&gt;</span>BalanceBreakdown:</span>
 <span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div id="138a4f86" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-10T20:12:12.537590Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-10T20:12:12.537438Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-10T20:12:12.539706Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-10T20:12:12.539143Z&quot;}}" data-execution_count="16">
+<div id="138a4f86" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-12T12:36:59.010517Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-12T12:36:59.010370Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-12T12:36:59.012858Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-12T12:36:59.012058Z&quot;}}" data-execution_count="16">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># offline verify: we only test the parser above.</span></span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="bu">callable</span>(fetch_balances_spectre)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Intent: run the same helper against the real API so notebook readers can inspect actual values (without failing tests if network is unavailable).</p>
-<div id="2cc4416b" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-10T20:12:12.541532Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-10T20:12:12.541374Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-10T20:12:13.115871Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-10T20:12:13.115239Z&quot;}}" data-execution_count="17">
+<div id="2cc4416b" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-12T12:36:59.014407Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-12T12:36:59.014256Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-12T12:36:59.650456Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-12T12:36:59.649821Z&quot;}}" data-execution_count="17">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>live_session <span class="op">=</span> build_session(<span class="st">"nym-node-reward-tracker/notebook-live"</span>)</span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>live_wallet <span class="op">=</span> <span class="st">"n127c69pasr35p76amfczemusnutr8mtw78s8xl7"</span></span>
 <span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -522,7 +528,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="bu">isinstance</span>(live_spectre, BalanceBreakdown)</span>
 <span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>live_spectre</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="17">
-<pre><code>BalanceBreakdown(delegated_unym=200977025706, self_bonded_unym=15000000000, spendable_unym=60639227, locked_unym=0, rewards_operator_commissions_unym=2390256719, rewards_staking_rewards_unym=441855607, rewards_unlocked_unym=0)</code></pre>
+<pre><code>BalanceBreakdown(delegated_unym=200977025706, self_bonded_unym=15000000000, spendable_unym=60639227, locked_unym=0, rewards_operator_commissions_unym=2460861134, rewards_staking_rewards_unym=524574066, rewards_unlocked_unym=0)</code></pre>
 </div>
 </div>
 </section>
@@ -530,7 +536,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="source-2-cosmos-snapshot-builder-best-effort-chain-native" class="level2">
 <h2 class="anchored" data-anchor-id="source-2-cosmos-snapshot-builder-best-effort-chain-native">Source 2: Cosmos snapshot builder (best-effort, chain-native)</h2>
 <p>Intent: query the bank module for <code>unym</code> spendable balance.</p>
-<div id="38e310e1" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-10T20:12:13.117847Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-10T20:12:13.117668Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-10T20:12:13.177093Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-10T20:12:13.176510Z&quot;}}" data-execution_count="18">
+<div id="38e310e1" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-12T12:36:59.652427Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-12T12:36:59.652257Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-12T12:36:59.713958Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-12T12:36:59.713332Z&quot;}}" data-execution_count="18">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="va">WALLET</span><span class="op">=</span><span class="st">"n127c69pasr35p76amfczemusnutr8mtw78s8xl7"</span></span>
 <span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="va">NYX_BANK_REST</span><span class="op">=</span><span class="st">"https://api.nymtech.net/cosmos/bank/v1beta1"</span></span>
 <span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="va">URL</span><span class="op">=</span><span class="st">"</span><span class="va">${NYX_BANK_REST}</span><span class="st">/balances/</span><span class="va">${WALLET}</span><span class="st">"</span></span>
@@ -561,7 +567,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>    logger:NoneType<span class="op">=</span><span class="va">None</span></span>
 <span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>)<span class="op">-&gt;</span><span class="bu">int</span>:</span>
 <span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div id="0c70b904" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-10T20:12:13.183708Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-10T20:12:13.183536Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-10T20:12:13.186229Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-10T20:12:13.185774Z&quot;}}" data-execution_count="20">
+<div id="0c70b904" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-12T12:36:59.721071Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-12T12:36:59.720917Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-12T12:36:59.723552Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-12T12:36:59.723085Z&quot;}}" data-execution_count="20">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>sample_bank <span class="op">=</span> {<span class="st">"balances"</span>: [{<span class="st">"denom"</span>: <span class="st">"unym"</span>, <span class="st">"amount"</span>: <span class="st">"123"</span>}]}</span>
 <span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> _BankSession:</span>
 <span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> get(<span class="va">self</span>, url, params<span class="op">=</span><span class="va">None</span>, timeout<span class="op">=</span><span class="dv">0</span>):</span>
@@ -570,7 +576,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> fetch_spendable_unym_bank(_BankSession(), <span class="st">"n1"</span>, nyx_bank_rest<span class="op">=</span><span class="st">"https://x"</span>) <span class="op">==</span> <span class="dv">123</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Intent: list current delegations for a wallet (smart query), and sum principal amounts in unym.</p>
-<div id="293d55cc" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-10T20:12:13.188109Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-10T20:12:13.187937Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-10T20:12:13.252715Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-10T20:12:13.251970Z&quot;}}" data-execution_count="21">
+<div id="293d55cc" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-12T12:36:59.725451Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-12T12:36:59.725214Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-12T12:36:59.788945Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-12T12:36:59.788516Z&quot;}}" data-execution_count="21">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>WALLET<span class="op">=</span><span class="st">"n127c69pasr35p76amfczemusnutr8mtw78s8xl7"</span></span>
 <span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>NYX_WASM_REST<span class="op">=</span><span class="st">"https://api.nymtech.net/cosmwasm/wasm/v1/contract"</span></span>
 <span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>MIXNET_CONTRACT<span class="op">=</span><span class="st">"n17srjznxl9dvzdkpwpw24gg668wc73val88a6m5ajg6ankwvz9wtst0cznr"</span></span>
@@ -627,11 +633,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>)<span class="op">-&gt;</span>List[Dict[<span class="bu">str</span>, Any]]:</span>
 <span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p><em>Returns a flat list of delegations from contract query <code>get_delegator_delegations</code>,</em> handling pagination via <code>start_after</code> if present.</p>
-<div id="a0ba16fb" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-10T20:12:13.260935Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-10T20:12:13.260779Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-10T20:12:13.263426Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-10T20:12:13.262704Z&quot;}}" data-execution_count="23">
+<div id="a0ba16fb" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-12T12:36:59.796934Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-12T12:36:59.796778Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-12T12:36:59.799298Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-12T12:36:59.798659Z&quot;}}" data-execution_count="23">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> sum_delegated_unym([{<span class="st">"amount"</span>: {<span class="st">"amount"</span>: <span class="st">"10"</span>, <span class="st">"denom"</span>: <span class="st">"unym"</span>}}, {<span class="st">"amount"</span>: {<span class="st">"amount"</span>: <span class="st">"2"</span>}}]) <span class="op">==</span> <span class="dv">12</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Intent: fetch pending delegator reward for a (delegator,node_id) pair and return unym int.</p>
-<div id="a5ad1cdb" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-10T20:12:13.265067Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-10T20:12:13.264907Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-10T20:12:13.329557Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-10T20:12:13.329062Z&quot;}}" data-execution_count="24">
+<div id="a5ad1cdb" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-12T12:36:59.800857Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-12T12:36:59.800689Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-12T12:36:59.865835Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-12T12:36:59.865156Z&quot;}}" data-execution_count="24">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="va">WALLET</span><span class="op">=</span><span class="st">"n127c69pasr35p76amfczemusnutr8mtw78s8xl7"</span></span>
 <span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="va">NODE_ID</span><span class="op">=</span><span class="st">"2933"</span></span>
 <span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a><span class="va">NYX_WASM_REST</span><span class="op">=</span><span class="st">"https://api.nymtech.net/cosmwasm/wasm/v1/contract"</span></span>
@@ -652,9 +658,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     },
     "amount_earned": {
       "denom": "unym",
-      "amount": "441855607"
+      "amount": "524574066"
     },
-    "amount_earned_detailed": "441855607.324003049500983703",
+    "amount_earned_detailed": "524574066.198570905667208663",
     "mixnode_still_fully_bonded": true,
     "node_still_fully_bonded": true
   }
@@ -673,7 +679,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>)<span class="op">-&gt;</span><span class="bu">int</span>:</span>
 <span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Intent: provide a tiny fake session for deterministic verification of pending-reward query parsing.</p>
-<div id="89fffe6b" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-10T20:12:13.336424Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-10T20:12:13.336272Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-10T20:12:13.339002Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-10T20:12:13.338521Z&quot;}}" data-execution_count="26">
+<div id="89fffe6b" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-12T12:36:59.872092Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-12T12:36:59.871936Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-12T12:36:59.875065Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-12T12:36:59.874298Z&quot;}}" data-execution_count="26">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> _PendingSession:</span>
 <span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> get(<span class="va">self</span>, url, params<span class="op">=</span><span class="va">None</span>, timeout<span class="op">=</span><span class="dv">0</span>):</span>
 <span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> _FakeResp({<span class="st">"data"</span>: {<span class="st">"amount_earned"</span>: {<span class="st">"amount"</span>: <span class="st">"77"</span>, <span class="st">"denom"</span>: <span class="st">"unym"</span>}}})</span>
@@ -692,7 +698,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>try <code>get_pending_node_operator_reward</code> by node_id</li>
 <li>else return 0 (and let higher-level code report “unavailable” if desired)</li>
 </ol>
-<div id="3bb83cec" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-10T20:12:13.340954Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-10T20:12:13.340799Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-10T20:12:13.404712Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-10T20:12:13.404101Z&quot;}}" data-execution_count="27">
+<div id="3bb83cec" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-12T12:36:59.876500Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-12T12:36:59.876348Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-12T12:36:59.940441Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-12T12:36:59.939838Z&quot;}}" data-execution_count="27">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>WALLET<span class="op">=</span><span class="st">"n127c69pasr35p76amfczemusnutr8mtw78s8xl7"</span></span>
 <span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>NODE_ID<span class="op">=</span><span class="st">"2933"</span></span>
 <span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>NYX_WASM_REST<span class="op">=</span><span class="st">"https://api.nymtech.net/cosmwasm/wasm/v1/contract"</span></span>
@@ -714,9 +720,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     },
     "amount_earned": {
       "denom": "unym",
-      "amount": "2390256719"
+      "amount": "2460861134"
     },
-    "amount_earned_detailed": "2390256719.521210907713593052",
+    "amount_earned_detailed": "2460861134.830936160640492906",
     "mixnode_still_fully_bonded": true,
     "node_still_fully_bonded": true
   }
@@ -734,7 +740,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>    logger:NoneType<span class="op">=</span><span class="va">None</span></span>
 <span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>)<span class="op">-&gt;</span><span class="bu">int</span>:</span>
 <span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div id="dbebcc97" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-10T20:12:13.412287Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-10T20:12:13.412124Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-10T20:12:13.415335Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-10T20:12:13.414635Z&quot;}}" data-execution_count="29">
+<div id="dbebcc97" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-12T12:36:59.948174Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-12T12:36:59.948028Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-12T12:36:59.951311Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-12T12:36:59.950558Z&quot;}}" data-execution_count="29">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="co"># verify_get_pending_operator_reward_unym</span></span>
 <span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> _OpSession:</span>
 <span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> get(<span class="va">self</span>, <span class="op">*</span>args, <span class="op">**</span>kwargs):</span>
@@ -754,7 +760,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb36-17"><a href="#cb36-17" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb36-18"><a href="#cb36-18" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> out <span class="op">==</span> <span class="dv">7</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div id="4a837f9b" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-10T20:12:13.416916Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-10T20:12:13.416760Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-10T20:12:13.419150Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-10T20:12:13.418463Z&quot;}}" data-execution_count="30">
+<div id="4a837f9b" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-12T12:36:59.952859Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-12T12:36:59.952689Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-12T12:36:59.955079Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-12T12:36:59.954375Z&quot;}}" data-execution_count="30">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="bu">callable</span>(get_pending_operator_reward_unym)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
@@ -771,11 +777,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>    logger:NoneType<span class="op">=</span><span class="va">None</span></span>
 <span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>)<span class="op">-&gt;</span>Tuple[BalanceBreakdown, Optional[<span class="bu">int</span>], <span class="bu">str</span>]:</span>
 <span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div id="18babc04" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-10T20:12:13.426764Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-10T20:12:13.426596Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-10T20:12:13.428970Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-10T20:12:13.428333Z&quot;}}" data-execution_count="32">
+<div id="18babc04" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-12T12:36:59.962865Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-12T12:36:59.962694Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-12T12:36:59.965119Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-12T12:36:59.964367Z&quot;}}" data-execution_count="32">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="bu">callable</span>(fetch_balances_cosmos)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Intent: run the cosmos snapshot helper against real APIs so readers can inspect chain-native values without breaking tests when network is unavailable.</p>
-<div id="2cbbf156" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-10T20:12:13.430590Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-10T20:12:13.430435Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-10T20:12:13.559469Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-10T20:12:13.558627Z&quot;}}" data-execution_count="33">
+<div id="2cbbf156" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-12T12:36:59.966579Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-12T12:36:59.966426Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-12T12:37:00.087841Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-12T12:37:00.087115Z&quot;}}" data-execution_count="33">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>live_session <span class="op">=</span> build_session(<span class="st">"nym-node-reward-tracker/notebook-live"</span>)</span>
 <span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>live_wallet <span class="op">=</span> <span class="st">"n127c69pasr35p76amfczemusnutr8mtw78s8xl7"</span></span>
 <span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -789,7 +795,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb40-11"><a href="#cb40-11" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="bu">isinstance</span>(live_cosmos_balances, BalanceBreakdown)</span>
 <span id="cb40-12"><a href="#cb40-12" aria-hidden="true" tabindex="-1"></a>live_cosmos_balances</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="33">
-<pre><code>BalanceBreakdown(delegated_unym=200977025706, self_bonded_unym=15000000000, spendable_unym=60639227, locked_unym=0, rewards_operator_commissions_unym=2390256719, rewards_staking_rewards_unym=441855607, rewards_unlocked_unym=0)</code></pre>
+<pre><code>BalanceBreakdown(delegated_unym=200977025706, self_bonded_unym=15000000000, spendable_unym=60639227, locked_unym=0, rewards_operator_commissions_unym=2460861134, rewards_staking_rewards_unym=524574066, rewards_unlocked_unym=0)</code></pre>
 </div>
 </div>
 </section>
@@ -807,7 +813,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>    mixnet_contract:<span class="bu">str</span>, spectre_balance_url:<span class="bu">str</span>, timeout:<span class="bu">int</span>, logger</span>
 <span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>)<span class="op">-&gt;</span>WalletSnapshot:</span>
 <span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div id="d058dd17" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-10T20:12:13.567217Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-10T20:12:13.567041Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-10T20:12:13.571016Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-10T20:12:13.570168Z&quot;}}" data-execution_count="35">
+<div id="d058dd17" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-12T12:37:00.095705Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-12T12:37:00.095531Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-12T12:37:00.099290Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-12T12:37:00.098500Z&quot;}}" data-execution_count="35">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb43"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="co"># verify_build_wallet_snapshot</span></span>
 <span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> _S:</span>
 <span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> get(<span class="va">self</span>, <span class="op">*</span>args, <span class="op">**</span>kwargs):</span>
@@ -832,7 +838,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb43-22"><a href="#cb43-22" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb43-23"><a href="#cb43-23" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> ws.wallet_address <span class="op">==</span> <span class="st">"n1"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div id="b0f91485" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-10T20:12:13.572986Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-10T20:12:13.572809Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-10T20:12:13.575477Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-10T20:12:13.574735Z&quot;}}" data-execution_count="36">
+<div id="b0f91485" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-12T12:37:00.100979Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-12T12:37:00.100812Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-12T12:37:00.103346Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-12T12:37:00.102596Z&quot;}}" data-execution_count="36">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="bu">callable</span>(build_wallet_snapshot)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
@@ -867,7 +873,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>    history:Dict[<span class="bu">str</span>, Any], cutoff_ts:<span class="bu">float</span></span>
 <span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>)<span class="op">-&gt;</span>Dict[<span class="bu">str</span>, Any]:</span>
 <span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div id="27466cc2" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-10T20:12:13.584040Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-10T20:12:13.583909Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-10T20:12:13.586513Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-10T20:12:13.585938Z&quot;}}" data-execution_count="38">
+<div id="27466cc2" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-12T12:37:00.111616Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-12T12:37:00.111459Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-12T12:37:00.114160Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-12T12:37:00.113481Z&quot;}}" data-execution_count="38">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb48"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>h <span class="op">=</span> {<span class="st">"w"</span>: [{<span class="st">"ts"</span>: <span class="fl">0.0</span>, <span class="st">"total_unym"</span>: <span class="dv">10</span>}]}</span>
 <span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>out <span class="op">=</span> scaled_window_change_unym(h, wallet<span class="op">=</span><span class="st">"w"</span>, now_ts<span class="op">=</span><span class="dv">8</span> <span class="op">*</span> <span class="dv">24</span> <span class="op">*</span> <span class="dv">3600</span>, window_days<span class="op">=</span><span class="dv">7</span>, current_total_unym<span class="op">=</span><span class="dv">17</span>)</span>
 <span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> out <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -894,10 +900,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>    rows:List[WalletSnapshot], out_path:<span class="bu">str</span> <span class="op">|</span> Path</span>
 <span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a>)<span class="op">-&gt;</span><span class="va">None</span>:</span>
 <span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div id="4aed0743" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-10T20:12:13.597747Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-10T20:12:13.597594Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-10T20:12:13.599953Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-10T20:12:13.599328Z&quot;}}" data-execution_count="40">
+<div id="4aed0743" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-12T12:37:00.124712Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-12T12:37:00.124561Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-12T12:37:00.126813Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-12T12:37:00.126205Z&quot;}}" data-execution_count="40">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb51"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tempfile <span class="im">import</span> TemporaryDirectory</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div id="cbadd580" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-10T20:12:13.601356Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-10T20:12:13.601235Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-10T20:12:13.785910Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-10T20:12:13.785032Z&quot;}}" data-execution_count="41">
+<div id="cbadd580" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-12T12:37:00.128386Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-12T12:37:00.128228Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-12T12:37:00.301828Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-12T12:37:00.301112Z&quot;}}" data-execution_count="41">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb52"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>sample <span class="op">=</span> WalletSnapshot(</span>
 <span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>    timestamp_utc<span class="op">=</span><span class="st">"2026-01-01T00:00:00+00:00"</span>,</span>
 <span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a>    wallet_address<span class="op">=</span><span class="st">"n1wallet"</span>,</span>
@@ -950,11 +956,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb53-10"><a href="#cb53-10" aria-hidden="true" tabindex="-1"></a>    history_days:<span class="bu">int</span><span class="op">=</span><span class="dv">30</span>, timeout:<span class="bu">int</span><span class="op">=</span><span class="dv">20</span>, log_file:<span class="bu">str</span> <span class="op">|</span> <span class="va">None</span><span class="op">=</span><span class="va">None</span>, log_level:<span class="bu">str</span><span class="op">=</span><span class="st">'INFO'</span></span>
 <span id="cb53-11"><a href="#cb53-11" aria-hidden="true" tabindex="-1"></a>)<span class="op">-&gt;</span><span class="bu">int</span>:</span>
 <span id="cb53-12"><a href="#cb53-12" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div id="2eaec0db" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-10T20:12:13.795671Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-10T20:12:13.795539Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-10T20:12:13.797789Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-10T20:12:13.797190Z&quot;}}" data-execution_count="43">
+<div id="2eaec0db" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-12T12:37:00.311086Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-12T12:37:00.310921Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-12T12:37:00.313115Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-12T12:37:00.312574Z&quot;}}" data-execution_count="43">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb54"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="co"># verify_run_snapshot_use</span></span>
 <span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tempfile <span class="im">import</span> TemporaryDirectory</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div id="8d911632" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-10T20:12:13.799206Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-10T20:12:13.799087Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-10T20:12:13.802815Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-10T20:12:13.802316Z&quot;}}" data-execution_count="44">
+<div id="8d911632" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-12T12:37:00.314648Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-12T12:37:00.314489Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-12T12:37:00.318329Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-12T12:37:00.317821Z&quot;}}" data-execution_count="44">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb55"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> TemporaryDirectory() <span class="im">as</span> td:</span>
 <span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a>    data_dir <span class="op">=</span> Path(td)</span>
 <span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a>    wallets <span class="op">=</span> data_dir <span class="op">/</span> <span class="st">"__missing__.csv"</span></span>
@@ -962,14 +968,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb55-5"><a href="#cb55-5" aria-hidden="true" tabindex="-1"></a>    rc <span class="op">=</span> run_snapshot(data_dir<span class="op">=</span><span class="bu">str</span>(data_dir), wallets_csv<span class="op">=</span><span class="st">"__missing__.csv"</span>)</span>
 <span id="cb55-6"><a href="#cb55-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">assert</span> <span class="bu">isinstance</span>(rc, <span class="bu">int</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
-<pre><code>2026-02-10T21:12:13 | ERROR | nym_snapshot | No wallets found in /tmp/tmpifhcmw9g/__missing__.csv</code></pre>
+<pre><code>2026-02-12T13:37:00 | ERROR | nym_snapshot | No wallets found in /tmp/tmpwdesur12/__missing__.csv</code></pre>
 </div>
 </div>
-<div id="6c1f116e" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-10T20:12:13.804662Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-10T20:12:13.804479Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-10T20:12:13.806876Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-10T20:12:13.806255Z&quot;}}" data-execution_count="45">
+<div id="6c1f116e" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-12T12:37:00.320089Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-12T12:37:00.319932Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-12T12:37:00.322293Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-12T12:37:00.321583Z&quot;}}" data-execution_count="45">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb57"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="co"># verify_run_snapshot_signature</span></span>
 <span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> run_snapshot.<span class="va">__name__</span> <span class="op">==</span> <span class="st">"run_snapshot"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div id="008229d9" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-10T20:12:13.808443Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-10T20:12:13.808276Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-10T20:12:13.810877Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-10T20:12:13.810131Z&quot;}}" data-execution_count="46">
+<div id="008229d9" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-02-12T12:37:00.323900Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-02-12T12:37:00.323722Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-02-12T12:37:00.326204Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-02-12T12:37:00.325560Z&quot;}}" data-execution_count="46">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb58"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="bu">callable</span>(run_snapshot)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 

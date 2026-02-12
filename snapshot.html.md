@@ -125,11 +125,11 @@ curl -s "https://api.nymtech.net/cosmwasm/wasm/v1/contract/${MIXNET_CONTRACT}/sm
                 "amount": "80000000"
               }
             },
-            "operator": "17390256719.521210907713593052",
-            "delegates": "257303535287.147314054693885213",
-            "total_unit_reward": "66135334.77153225699149127",
+            "operator": "17460861134.830936160640492906",
+            "delegates": "257508697946.918840668874723276",
+            "total_unit_reward": "66985424.766269536600989211",
             "unit_delegation": "1000000000",
-            "last_rewarded_epoch": 28393,
+            "last_rewarded_epoch": 28429,
             "unique_delegations": 4
           },
           "pending_changes": {
@@ -190,11 +190,11 @@ curl -s "$URL" | jq '.'
       },
       "rewards": {
         "operator_commissions": {
-          "amount": 2390256719,
+          "amount": 2460861134,
           "denom": "unym"
         },
         "staking_rewards": {
-          "amount": 441855607,
+          "amount": 524574066,
           "denom": "unym"
         },
         "unlocked": {
@@ -211,7 +211,7 @@ curl -s "$URL" | jq '.'
         "denom": "unym"
       },
       "total": {
-        "amount": 218869777259,
+        "amount": 219023100133,
         "denom": "unym"
       }
     }
@@ -284,7 +284,7 @@ assert isinstance(live_spectre, BalanceBreakdown)
 live_spectre
 ```
 
-    BalanceBreakdown(delegated_unym=200977025706, self_bonded_unym=15000000000, spendable_unym=60639227, locked_unym=0, rewards_operator_commissions_unym=2390256719, rewards_staking_rewards_unym=441855607, rewards_unlocked_unym=0)
+    BalanceBreakdown(delegated_unym=200977025706, self_bonded_unym=15000000000, spendable_unym=60639227, locked_unym=0, rewards_operator_commissions_unym=2460861134, rewards_staking_rewards_unym=524574066, rewards_unlocked_unym=0)
 
 ## Source 2: Cosmos snapshot builder (best-effort, chain-native)
 
@@ -435,9 +435,9 @@ curl -s "${NYX_WASM_REST}/${MIXNET_CONTRACT}/smart/${Q}" | jq '.'
         },
         "amount_earned": {
           "denom": "unym",
-          "amount": "441855607"
+          "amount": "524574066"
         },
-        "amount_earned_detailed": "441855607.324003049500983703",
+        "amount_earned_detailed": "524574066.198570905667208663",
         "mixnode_still_fully_bonded": true,
         "node_still_fully_bonded": true
       }
@@ -507,9 +507,9 @@ curl -s "${NYX_WASM_REST}/${MIXNET_CONTRACT}/smart/${Q}" | jq '.'
         },
         "amount_earned": {
           "denom": "unym",
-          "amount": "2390256719"
+          "amount": "2460861134"
         },
-        "amount_earned_detailed": "2390256719.521210907713593052",
+        "amount_earned_detailed": "2460861134.830936160640492906",
         "mixnode_still_fully_bonded": true,
         "node_still_fully_bonded": true
       }
@@ -597,7 +597,7 @@ assert isinstance(live_cosmos_balances, BalanceBreakdown)
 live_cosmos_balances
 ```
 
-    BalanceBreakdown(delegated_unym=200977025706, self_bonded_unym=15000000000, spendable_unym=60639227, locked_unym=0, rewards_operator_commissions_unym=2390256719, rewards_staking_rewards_unym=441855607, rewards_unlocked_unym=0)
+    BalanceBreakdown(delegated_unym=200977025706, self_bonded_unym=15000000000, spendable_unym=60639227, locked_unym=0, rewards_operator_commissions_unym=2460861134, rewards_staking_rewards_unym=524574066, rewards_unlocked_unym=0)
 
 ## Snapshot orchestration
 
@@ -803,7 +803,7 @@ with TemporaryDirectory() as td:
     assert isinstance(rc, int)
 ```
 
-    2026-02-10T21:12:13 | ERROR | nym_snapshot | No wallets found in /tmp/tmpifhcmw9g/__missing__.csv
+    2026-02-12T13:37:00 | ERROR | nym_snapshot | No wallets found in /tmp/tmpwdesur12/__missing__.csv
 
 ``` python
 # verify_run_snapshot_signature

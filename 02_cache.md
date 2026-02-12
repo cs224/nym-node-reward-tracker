@@ -1149,8 +1149,8 @@ curl -s "$TM/blocks/latest" | jq '{height:.block.header.height, time:.block.head
 ```
 
     {
-      "height": "22346106",
-      "time": "2026-02-10T20:12:08.778736132Z"
+      "height": "22371647",
+      "time": "2026-02-12T12:36:52.454968768Z"
     }
 
 Node metadata (`get_node_metadata`): inspect bonding height, identity,
@@ -1178,7 +1178,7 @@ jq -n --argjson d "$DETAILS" --argjson r "$REWARD" '{
     {
       "bonding_height": 16380988,
       "identity_key": null,
-      "total_unit_reward": "66135334.77153225699149127",
+      "total_unit_reward": "66985424.766269536600989211",
       "unique_delegations": 4
     }
 
@@ -1280,7 +1280,7 @@ curl -s "$WASM/$CONTRACT/smart/$Q" | jq '{amount_staked:.data.amount_staked.amou
 
     {
       "amount_staked": "200977025706",
-      "amount_earned": "441855607",
+      "amount_earned": "524574066",
       "node_still_fully_bonded": true
     }
 

@@ -145,6 +145,14 @@ Also directly relevant:
   [`00_cosmos_tx_parsing`](cosmos_tx_parsing.html)
 - For notebook tests and behavior checks: [`99_tests`](tests.html)
 
+## Manual Node-Interest Walkthrough
+
+A new human-first walkthrough is available at
+`nbs/90_node_interest_rates_estimation.ipynb`. It demonstrates
+node-level APR/APY estimation from historical Nyx reward events,
+role-assignment reconstruction, and notes on operator reward split
+semantics.
+
 # Manual epoch-by-epoch reward walkthrough (didactic cache replay)
 
 This section is a **didactic** reconstruction of how Nym v2 delegator
